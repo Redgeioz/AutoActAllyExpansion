@@ -129,6 +129,11 @@ static class AutoAct_Patch
         var axe = chara.things.Find(t => t.trait is TraitTool && t.HasElement(225, 1));
         var pickaxe = chara.things.Find(t => t.trait is TraitTool && t.HasElement(220, 1));
         var diggingTool = chara.things.Find(t => t.trait is TraitTool && t.HasElement(230, 1));
+        if (pickaxe.HasValue() || axe.HasValue())
+        {
+            tool = pickaxe ?? axe;
+        }
+
         if (pc.held?.trait is TraitToolSickle)
         {
             return;
@@ -156,12 +161,12 @@ static class AutoAct_Patch
             {
                 tool = pickaxe ?? axe;
             }
+            else if (tool.IsNull())
+            {
+                return;
+            }
         }
-        else if (pickaxe.HasValue() || axe.HasValue())
-        {
-            tool = pickaxe ?? axe;
-        }
-        else
+        else if (tool.IsNull())
         {
             return;
         }

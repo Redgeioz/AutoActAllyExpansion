@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Reflection;
 using System.Reflection.Emit;
 using AutoActMod.Actions;
 using HarmonyLib;
@@ -23,6 +24,17 @@ static class Move
     static bool IsPCOrAutoActChara(Chara chara)
     {
         return chara.IsPC || chara.ai is AutoAct;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(Chara), nameof(Chara.MoveByForce))]
+    static bool MoveByForce_Patch(Chara __instance)
+    {
+        if (__instance.IsPCParty && !__instance.IsPC && __instance.ai is AutoAct)
+        {
+            return false;
+        }
+        return true;
     }
 
     [HarmonyPrefix]
