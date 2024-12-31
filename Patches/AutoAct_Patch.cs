@@ -73,11 +73,12 @@ static class AutoAct_Patch
             }
         });
 
-        if (ai is not AutoActWait && Settings.PCWait && !(ai is AutoActHarvestMine && EClass.pc.held?.trait is TraitToolSickle))
+        static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct);
+        if (ai is not AutoActWait && Settings.PCWait && CanWait())
         {
             EClass.pc.SetAI(new AutoActWait
             {
-                canContinue = () => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct),
+                canContinue = CanWait,
             });
         }
     }
@@ -95,7 +96,7 @@ static class AutoAct_Patch
         {
             EClass.pc.party.members.ForEach(chara =>
             {
-                if (chara.IsPC || chara.ride.HasValue())
+                if (chara.IsPC || chara.ride.HasValue() || chara.host.HasValue())
                 {
                     return;
                 }

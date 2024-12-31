@@ -9,7 +9,7 @@ namespace AutoActAllyExpansion.Patches;
 static class Misc
 {
     [HarmonyPrefix]
-    [HarmonyPatch(typeof(Progress_Custom), "CancelWhenMoved", MethodType.Getter)]
+    [HarmonyPatch(typeof(Progress_Custom), nameof(Progress_Custom.CancelWhenMoved), MethodType.Getter)]
     static bool CancelWhenMoved_Patch(Progress_Custom __instance, ref bool __result)
     {
         if (__instance.parent?.parent is AutoAct)
