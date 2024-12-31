@@ -17,13 +17,8 @@ static class Move
             .MatchStartForward(
                 new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Card), "get_IsPC")))
             .SetInstruction(
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Move), nameof(IsPCOrAutoActChara))))
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Misc), nameof(Misc.IsPCOrAutoActChara))))
             .InstructionEnumeration();
-    }
-
-    static bool IsPCOrAutoActChara(Chara chara)
-    {
-        return chara.IsPC || chara.ai is AutoAct;
     }
 
     [HarmonyPrefix]

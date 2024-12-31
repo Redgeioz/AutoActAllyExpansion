@@ -51,4 +51,21 @@ static class Misc
 
         return true;
     }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(Zone), nameof(Zone.IsCrime))]
+    static IEnumerable<CodeInstruction> IsCrime_Patch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Card), "get_IsPC")))
+            .SetInstruction(
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Misc), nameof(IsPCOrAutoActChara))))
+            .InstructionEnumeration();
+    }
+
+    public static bool IsPCOrAutoActChara(Chara chara)
+    {
+        return chara.IsPC || chara.ai is AutoAct;
+    }
 }
