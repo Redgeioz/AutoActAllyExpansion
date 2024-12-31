@@ -29,12 +29,29 @@ static class AutoAct_Patch
     [HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnStart))]
     static void OnStart_Patch(AutoAct __instance)
     {
-        if (__instance.owner.IsNull() || !__instance.owner.IsPC || EClass._zone.IsRegion || !Settings.Enable)
+        if (__instance.owner.IsNull() || !__instance.owner.IsPCParty || EClass._zone.IsRegion || !Settings.Enable)
         {
             return;
         }
 
-        var ai = EClass.pc.ai;
+        var ai = EClass.pc.ai as AutoAct;
+        if (!__instance.owner.IsPC)
+        {
+            EClass.pc.party.members.ForEach(chara =>
+            {
+                if (chara.IsPC)
+                {
+                    return;
+                }
+
+                if (chara.ai is AutoAct a)
+                {
+                    a.startDir = ai.startDir;
+                }
+            });
+            return;
+        }
+
         EClass.pc.party.members.ForEach(chara =>
         {
             if (chara.IsPC)
@@ -56,7 +73,7 @@ static class AutoAct_Patch
             }
         });
 
-        if (ai is not AutoActWait && Settings.PCWait)
+        if (ai is not AutoActWait && Settings.PCWait && !(ai is AutoActHarvestMine && EClass.pc.held?.trait is TraitToolSickle))
         {
             EClass.pc.SetAI(new AutoActWait
             {
@@ -78,7 +95,7 @@ static class AutoAct_Patch
         {
             EClass.pc.party.members.ForEach(chara =>
             {
-                if (chara.IsPC)
+                if (chara.IsPC || chara.ride.HasValue())
                 {
                     return;
                 }
@@ -111,7 +128,7 @@ static class AutoAct_Patch
         var axe = chara.things.Find(t => t.trait is TraitTool && t.HasElement(225, 1));
         var pickaxe = chara.things.Find(t => t.trait is TraitTool && t.HasElement(220, 1));
         var diggingTool = chara.things.Find(t => t.trait is TraitTool && t.HasElement(230, 1));
-        if (ai.Child is TaskHarvest t && t.IsReapSeed)
+        if (pc.held?.trait is TraitToolSickle)
         {
             return;
         }
@@ -157,7 +174,10 @@ static class AutoAct_Patch
             }
         }
 
-        chara.HoldCard(tool);
+        if (tool.HasValue())
+        {
+            chara.HoldCard(tool);
+        }
 
         if (ai.Child is TaskHarvest th)
         {
