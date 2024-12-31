@@ -34,7 +34,7 @@ static class SmoothPick
     [HarmonyPatch(typeof(Map), nameof(Map.TrySmoothPick), new Type[] { typeof(Point), typeof(Thing), typeof(Chara) })]
     static bool TrySmoothPick_Patch(Map __instance, Point p, Thing t, Chara c)
     {
-        if (!(SmoothPickChara.HasValue() || (c.HasValue() && !c.IsAgent && c.IsPCParty && !c.IsPC)))
+        if (c != SmoothPickChara)
         {
             return true;
         }
@@ -48,5 +48,23 @@ static class SmoothPick
             SmoothPickChara.PickOrDrop(p, t, true);
         }
         return false;
+    }
+
+    [HarmonyPrefix]
+    [HarmonyPatch(typeof(Chara), nameof(Chara.Pick))]
+    static bool Pick_Patch(Chara __instance, Thing t, bool msg, bool tryStack)
+    {
+        if (__instance != SmoothPickChara)
+        {
+            return true;
+        }
+
+        if (Settings.PickForPC)
+        {
+            EClass.pc.Pick(t, msg, tryStack);
+            return false;
+        }
+
+        return true;
     }
 }
