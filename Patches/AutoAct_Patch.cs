@@ -11,6 +11,9 @@ namespace AutoActAllyExpansion.Patches;
 [HarmonyPatch]
 static class AutoAct_Patch
 {
+    static int LastStartDir = 0;
+    static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct);
+
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(AASettings), nameof(AASettings.SetupSettingsUI))]
     static IEnumerable<CodeInstruction> SetupSettings_Patch(IEnumerable<CodeInstruction> instructions)
@@ -37,24 +40,22 @@ static class AutoAct_Patch
         var ai = EClass.pc.ai as AutoAct;
         if (!__instance.owner.IsPC)
         {
-            EClass.pc.party.members.ForEach(chara =>
+            if (__instance.owner.ai is AutoAct a)
             {
-                if (chara.IsPC)
-                {
-                    return;
-                }
-
-                if (chara.ai is AutoAct a)
-                {
-                    a.startDir = ai.startDir;
-                }
-            });
+                a.startDir = LastStartDir;
+            }
             return;
         }
 
+        if (ai is AutoActWait)
+        {
+            return;
+        }
+
+        LastStartDir = ai.startDir;
         EClass.pc.party.members.ForEach(chara =>
         {
-            if (chara.IsPC)
+            if (chara.IsPC || chara.ride.HasValue() || chara.host.HasValue())
             {
                 return;
             }
@@ -71,15 +72,20 @@ static class AutoAct_Patch
             {
                 TrySetAutoActPlow(chara);
             }
+            else if (ai is AutoActBuild)
+            {
+                TrySetAutoActBuild(chara);
+            }
         });
 
-        static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct);
-        if (ai is not AutoActWait && Settings.PCWait && CanWait())
+        if (Settings.PCWait && CanWait())
         {
+            AutoAct.IsSetting = true;
             EClass.pc.SetAI(new AutoActWait
             {
                 canContinue = CanWait,
             });
+            AutoAct.IsSetting = false;
         }
     }
 
@@ -87,36 +93,49 @@ static class AutoAct_Patch
     [HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnCancelOrSuccess))]
     static void OnCancelOrSuccess_Patch(AutoAct __instance)
     {
-        if (__instance.owner.IsNull())
+        if (__instance.owner.IsNull() || AutoAct.IsSetting)
         {
             return;
         }
 
         if (__instance.owner.IsPC)
         {
-            EClass.pc.party.members.ForEach(chara =>
+            if (__instance.status == AIAct.Status.Fail)
             {
-                if (chara.IsPC || chara.ride.HasValue() || chara.host.HasValue())
+                EClass.pc.party.members.ForEach(chara =>
                 {
-                    return;
-                }
+                    if (chara.IsPC)
+                    {
+                        return;
+                    }
 
-                if (chara.ai is AutoAct a)
-                {
-                    if (__instance.status == AIAct.Status.Fail)
+                    if (chara.ai is AutoAct a)
                     {
                         a.Fail();
                     }
-                    else
-                    {
-                        a.canContinue = false;
-                    }
-                }
-            });
+                });
+            }
+            else if (__instance is not AutoActWait && CanWait())
+            {
+                AutoAct.IsSetting = true;
+                EClass.pc.SetAI(new AutoActWait
+                {
+                    canContinue = CanWait,
+                });
+                AutoAct.IsSetting = false;
+            }
         }
         else
         {
-            __instance.owner.PickHeld();
+            var owner = __instance.owner;
+            if (owner.held is Chara || owner.things.Find(t => t == owner.held).HasValue())
+            {
+                owner.PickHeld();
+            }
+            else
+            {
+                owner.held = null;
+            }
         }
     }
 
@@ -207,15 +226,12 @@ static class AutoAct_Patch
 
     internal static void TrySetAutoActDig(Chara chara)
     {
-        AutoActAllyExpansion.Log(chara.Name + " TrySetAutoActDig 1");
         var diggingTool = chara.things.Find(t => t.trait is TraitTool && t.HasElement(230, 1));
         if (diggingTool.IsNull())
         {
-            AutoActAllyExpansion.Log(chara.Name + " TrySetAutoActDig 2");
             return;
         }
 
-        AutoActAllyExpansion.Log(chara.Name + " TrySetAutoActDig 3");
         chara.HoldCard(diggingTool);
 
         var refTask = EClass.pc.ai.child as TaskDig;
@@ -225,7 +241,6 @@ static class AutoAct_Patch
             mode = refTask.mode,
         };
         AutoAct.TrySetAutoAct(chara, source);
-        AutoActAllyExpansion.Log(chara.Name + " TrySetAutoActDig 4" + chara.held);
     }
 
     internal static void TrySetAutoActPlow(Chara chara)
@@ -257,5 +272,18 @@ static class AutoAct_Patch
         AutoAct.TrySetAutoAct(chara, new AI_PlayMusic { tool = tool });
 
         chara.HoldCard(tool);
+    }
+
+    internal static void TrySetAutoActBuild(Chara chara)
+    {
+        var ai = EClass.pc.ai as AutoAct;
+        var held = EClass.pc.held as Thing;
+        AutoAct.TrySetAutoAct(chara, new TaskBuild
+        {
+            recipe = held.trait.GetRecipe(),
+            held = held,
+            pos = ai.Pos.Copy()
+        });
+        chara.held = held;
     }
 }

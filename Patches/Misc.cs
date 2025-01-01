@@ -44,7 +44,7 @@ static class Misc
 
     static bool CanPickHeld(AIAct a)
     {
-        if (a.owner.IsPCParty && (AutoAct.isSetting || a.owner.ai is AutoAct))
+        if (a.owner.IsPCParty && (AutoAct.IsSetting || a.owner.ai is AutoAct))
         {
             return false;
         }
