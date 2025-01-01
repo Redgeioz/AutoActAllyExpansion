@@ -7,7 +7,7 @@ using UnityEngine;
 namespace AutoActAllyExpansion.Patches;
 
 [HarmonyPatch]
-static class EnableAutoActPlayMusic
+static class EnablePlayMusic
 {
     [HarmonyPostfix]
     [HarmonyPatch(typeof(AI_PlayMusic), nameof(AI_PlayMusic.CancelKeepPlaying))]

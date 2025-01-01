@@ -1,24 +1,22 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using AutoActAllyExpansion.Actions;
 using AutoActMod;
 using AutoActMod.Actions;
 using HarmonyLib;
-using UnityEngine;
 
 namespace AutoActAllyExpansion.Patches;
 
 [HarmonyPatch]
-static class EnableAutoActBuild
+static class EnableBuild
 {
     static HashSet<Point> Field = new();
     static bool IsFieldValid = false;
 
     [HarmonyPrefix]
-    [HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnStart))]
+    [HarmonyPatch(typeof(AutoActBuild), nameof(AutoActBuild.OnStart))]
     static void OnStart_Patch(AutoAct __instance)
     {
-        if (__instance is AutoActBuild && __instance.owner.IsPC)
+        if (__instance.owner.IsPC)
         {
             IsFieldValid = false;
         }

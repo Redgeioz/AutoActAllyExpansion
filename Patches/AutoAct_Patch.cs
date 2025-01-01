@@ -12,7 +12,18 @@ namespace AutoActAllyExpansion.Patches;
 static class AutoAct_Patch
 {
     static int LastStartDir = 0;
+
     static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct);
+
+    static void PCWait()
+    {
+        AutoAct.IsSetting = true;
+        EClass.pc.SetAI(new AutoActWait
+        {
+            canContinue = CanWait,
+        });
+        AutoAct.IsSetting = false;
+    }
 
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(AASettings), nameof(AASettings.SetupSettingsUI))]
@@ -80,12 +91,7 @@ static class AutoAct_Patch
 
         if (Settings.PCWait && CanWait())
         {
-            AutoAct.IsSetting = true;
-            EClass.pc.SetAI(new AutoActWait
-            {
-                canContinue = CanWait,
-            });
-            AutoAct.IsSetting = false;
+            PCWait();
         }
     }
 
@@ -117,12 +123,7 @@ static class AutoAct_Patch
             }
             else if (__instance is not AutoActWait && CanWait())
             {
-                AutoAct.IsSetting = true;
-                EClass.pc.SetAI(new AutoActWait
-                {
-                    canContinue = CanWait,
-                });
-                AutoAct.IsSetting = false;
+                PCWait();
             }
         }
         else
@@ -147,7 +148,6 @@ static class AutoAct_Patch
         Thing tool = null;
         var axe = chara.things.Find(t => t.trait is TraitTool && t.HasElement(225, 1));
         var pickaxe = chara.things.Find(t => t.trait is TraitTool && t.HasElement(220, 1));
-        var diggingTool = chara.things.Find(t => t.trait is TraitTool && t.HasElement(230, 1));
         if (pickaxe.HasValue() || axe.HasValue())
         {
             tool = pickaxe ?? axe;
@@ -155,7 +155,11 @@ static class AutoAct_Patch
 
         if (pc.held?.trait is TraitToolSickle)
         {
-            return;
+            tool = chara.things.Find(t => t.trait is TraitToolSickle);
+            if (tool.IsNull())
+            {
+                return;
+            }
         }
         else if (ai.Pos.HasObj)
         {
@@ -170,7 +174,7 @@ static class AutoAct_Patch
             }
             else if (str == "digging")
             {
-                tool = diggingTool;
+                tool = chara.things.Find(t => t.trait is TraitTool && t.HasElement(230, 1));
                 if (tool.IsNull())
                 {
                     return;
