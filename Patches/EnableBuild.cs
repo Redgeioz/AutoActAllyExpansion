@@ -9,7 +9,7 @@ namespace AutoActAllyExpansion.Patches;
 [HarmonyPatch]
 static class EnableBuild
 {
-    static HashSet<Point> Field = new();
+    static HashSet<Point> Field = [];
     static bool IsFieldValid = false;
 
     [HarmonyPrefix]

@@ -12,8 +12,7 @@ namespace AutoActAllyExpansion.Patches;
 static class AutoAct_Patch
 {
     static int LastStartDir = 0;
-
-    static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct);
+    static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct || !chara.ai.IsRunning);
 
     static void PCWait()
     {
@@ -32,7 +31,7 @@ static class AutoAct_Patch
         return new CodeMatcher(instructions)
             .MatchStartForward(
                 new CodeMatch(OpCodes.Ldloc_1),
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(UIContextMenu), "Show", new Type[] { })))
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(UIContextMenu), "Show", [])))
             .InsertAndAdvance(
                 new CodeInstruction(OpCodes.Ldloc_1),
                 new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Settings), nameof(Settings.SetupSettings))))
