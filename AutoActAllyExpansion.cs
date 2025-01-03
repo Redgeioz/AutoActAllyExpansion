@@ -1,9 +1,9 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
 using AutoActMod.Actions;
 using BepInEx;
 using HarmonyLib;
+using UnityEngine;
 
 namespace AutoActAllyExpansion;
 
@@ -13,6 +13,7 @@ public class AutoActAllyExpansion : BaseUnityPlugin
     void Awake()
     {
         Instance = this;
+        Settings.keyCode = Config.Bind("Settings", "KeyCode", KeyCode.LeftAlt);
         Settings.enable = Config.Bind("Settings", "Enable", true);
         Settings.pickForPC = Config.Bind("Settings", "PickToPc", true);
         Settings._PCWait = Config.Bind("Settings", "PCWait", false);
@@ -31,6 +32,15 @@ public class AutoActAllyExpansion : BaseUnityPlugin
         });
 
         new Harmony("AutoActAllyExpansion").PatchAll();
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(Settings.KeyCode))
+        {
+            Settings.Enable = !Settings.Enable;
+            AutoActMod.AutoActMod.Say(AAAELang.GetText(Settings.Enable ? "on" : "off"));
+        }
     }
 
     internal static void Log(object payload)
