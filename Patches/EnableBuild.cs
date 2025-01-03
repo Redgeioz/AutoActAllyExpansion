@@ -54,23 +54,18 @@ static class EnableBuild
         }
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(AutoActBuild), nameof(AutoActBuild.MaxRestart), MethodType.Getter)]
-    static bool MaxRestart_Patch(AutoActBuild __instance, ref int __result)
-    {
-        if (__instance.owner.HasValue() && !__instance.owner.IsPC)
-        {
-            __result = 1;
-            return false;
-        }
-        return true;
-    }
-
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(TaskBuild), nameof(TaskBuild.OnProgressComplete))]
     static IEnumerable<CodeInstruction> OnProgressComplete_Patch(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Call),
+                new CodeMatch(OpCodes.Ldfld))
+            .RemoveInstructions(2)
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_0),
+                Transpilers.EmitDelegate((TaskBuild thiz) => thiz.held == EClass.pc.held && EClass.pc.held.HasValue()))
             .MatchEndForward(
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldfld),
@@ -83,19 +78,18 @@ static class EnableBuild
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldfld),
-                new CodeMatch(OpCodes.Ldfld),
-                new CodeMatch(OpCodes.Stfld),
-                new CodeMatch(OpCodes.Call))
-            .RemoveInstruction()
-            .InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldarg_0),
-                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AIAct), "owner")))
-            .MatchEndForward(
-                new CodeMatch(OpCodes.Call))
-            .RemoveInstruction()
-            .InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldarg_0),
-                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AIAct), "owner")))
+                new CodeMatch(OpCodes.Ldfld))
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(EClass), "get_pc")))
+            .Repeat(matcher =>
+            {
+                matcher
+                    .RemoveInstruction()
+                    .InsertAndAdvance(
+                        new CodeInstruction(OpCodes.Ldarg_0),
+                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AIAct), "owner"))
+                    );
+            })
             .InstructionEnumeration();
     }
 }

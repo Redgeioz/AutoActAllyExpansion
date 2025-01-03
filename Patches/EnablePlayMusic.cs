@@ -21,7 +21,7 @@ static class EnablePlayMusic
         AutoActPlayMusic.isPCPlaying = false;
         EClass.pc.party.members.ForEach(chara =>
         {
-            if (chara.IsPC)
+            if (chara.IsPC || !chara.ai.IsRunning)
             {
                 return;
             }

@@ -18,7 +18,7 @@ static class FilterOutAllyTarget
         AllyTasks.Clear();
         EClass.pc.party.members.ForEach(chara =>
         {
-            if (chara == current.owner)
+            if (chara == current.owner || !chara.ai.IsRunning)
             {
                 return;
             }
@@ -33,11 +33,6 @@ static class FilterOutAllyTarget
                 ai = chara.ai as AutoAct;
             }
             else
-            {
-                return;
-            }
-
-            if (!ai.IsRunning)
             {
                 return;
             }
@@ -57,7 +52,7 @@ static class FilterOutAllyTarget
 
         static void Prefix(AutoAct __instance, ref Predicate<Cell> filter)
         {
-            if (!__instance.owner.IsPCParty)
+            if (!__instance.owner.IsPCParty || __instance.useOriginalPos)
             {
                 return;
             }
@@ -79,7 +74,7 @@ static class FilterOutAllyTarget
 
         static void Prefix(AutoAct __instance, ref Predicate<Card> filter)
         {
-            if (!__instance.owner.IsPCParty)
+            if (!__instance.owner.IsPCParty || __instance.useOriginalPos)
             {
                 return;
             }
@@ -112,23 +107,14 @@ static class FilterOutAllyTarget
 
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            var matcher = new CodeMatcher(instructions)
+            return new CodeMatcher(instructions)
                 .MatchStartForward(
                     new CodeMatch(OpCodes.Ldloc_0),
                     new CodeMatch(OpCodes.Ldloc_S),
-                    new CodeMatch(OpCodes.Callvirt),
-                    new CodeMatch(OpCodes.Brfalse))
-                .Advance(1);
-
-            var loadPoint = matcher.Instruction.Clone();
-            var cont = matcher.Advance(2).Instruction.Clone();
-
-            return matcher
-                .Advance(1)
-                .InsertAndAdvance(
-                    new CodeInstruction(loadPoint),
-                    Transpilers.EmitDelegate((Point p) => AllyTasks.Find(t => t.Pos.Equals(p)).IsNull()),
-                    new CodeInstruction(cont))
+                    new CodeMatch(OpCodes.Callvirt))
+                .Advance(2)
+                .SetInstruction(
+                    Transpilers.EmitDelegate((Predicate<Point> filter, Point p) => filter(p) && AllyTasks.Find(t => t.Pos.Equals(p)).IsNull()))
                 .InstructionEnumeration();
         }
     }

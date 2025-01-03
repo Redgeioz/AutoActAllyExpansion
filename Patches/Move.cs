@@ -23,9 +23,9 @@ static class Move
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(Chara), nameof(Chara.MoveByForce))]
-    static bool MoveByForce_Patch(Chara __instance)
+    static bool MoveByForce_Patch(Chara __instance, Card c)
     {
-        if (__instance.IsPCParty && !__instance.IsPC && __instance.ai is AutoAct)
+        if (__instance.IsPCParty && !__instance.IsPC && __instance.ai is AutoAct && !__instance.pos.HasBlock)
         {
             return false;
         }

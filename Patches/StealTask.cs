@@ -54,6 +54,7 @@ static class StealTask
     [HarmonyPatch]
     static class FindCard_Patch
     {
+        static String MethodName = null;
         static Predicate<Card> OriginalFilter = null;
 
         static IEnumerable<MethodInfo> TargetMethods() => [
@@ -62,9 +63,10 @@ static class StealTask
         ];
 
         [HarmonyPriority(Priority.High)]
-        static void Prefix(AutoAct __instance, ref Predicate<Card> filter)
+        static void Prefix(AutoAct __instance, ref Predicate<Card> filter, MethodBase __originalMethod)
         {
             OriginalFilter = filter;
+            MethodName = __originalMethod.Name;
         }
 
         static void Postfix(AutoAct __instance, ref Card __result)
@@ -76,7 +78,7 @@ static class StealTask
 
             static Card FindCard(Point p)
             {
-                if (OriginalFilter is Predicate<Thing>)
+                if (MethodName == nameof(AutoAct.FindThing))
                 {
                     return p.FindThing(t => OriginalFilter(t));
                 }

@@ -86,6 +86,10 @@ static class AutoAct_Patch
             {
                 TrySetAutoActBuild(chara);
             }
+            else if (ai is AutoActShear)
+            {
+                TrySetAutoActShear(chara);
+            }
         });
 
         if (Settings.PCWait && CanWait())
@@ -105,22 +109,20 @@ static class AutoAct_Patch
 
         if (__instance.owner.IsPC)
         {
-            if (__instance.status == AIAct.Status.Fail)
+            EClass.pc.party.members.ForEach(chara =>
             {
-                EClass.pc.party.members.ForEach(chara =>
+                if (chara.IsPC || !chara.ai.IsRunning)
                 {
-                    if (chara.IsPC)
-                    {
-                        return;
-                    }
+                    return;
+                }
 
-                    if (chara.ai is AutoAct a)
-                    {
-                        a.Fail();
-                    }
-                });
-            }
-            else if (__instance is not AutoActWait && CanWait())
+                if (chara.ai is AutoAct a && (__instance.status == AIAct.Status.Fail || !a.CanProgress()))
+                {
+                    a.Fail();
+                }
+            });
+
+            if (__instance is not AutoActWait && CanWait())
             {
                 PCWait();
             }
@@ -288,5 +290,19 @@ static class AutoAct_Patch
             pos = ai.Pos.Copy()
         });
         chara.held = held;
+    }
+
+    internal static void TrySetAutoActShear(Chara chara)
+    {
+        var tool = chara.things.Find<TraitToolShears>();
+        if (tool.IsNull())
+        {
+            return;
+        }
+
+        chara.HoldCard(tool);
+
+        var refTask = EClass.pc.ai.child as AI_Shear;
+        AutoAct.TrySetAutoAct(chara, new AI_Shear { target = refTask.target });
     }
 }
