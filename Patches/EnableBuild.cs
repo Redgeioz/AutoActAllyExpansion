@@ -11,6 +11,7 @@ static class EnableBuild
 {
     static HashSet<Point> Field = [];
     static bool IsFieldValid = false;
+    static Chara Builder;
 
     [HarmonyPrefix]
     [HarmonyPatch(typeof(AutoActBuild), nameof(AutoActBuild.OnStart))]
@@ -65,15 +66,18 @@ static class EnableBuild
             .RemoveInstructions(2)
             .InsertAndAdvance(
                 new CodeInstruction(OpCodes.Ldarg_0),
-                Transpilers.EmitDelegate((TaskBuild thiz) => thiz.held == EClass.pc.held && EClass.pc.held.HasValue()))
+                Transpilers.EmitDelegate((TaskBuild thiz) =>
+                {
+                    Builder = thiz.owner;
+                    return thiz.held == EClass.pc.held && EClass.pc.held.HasValue();
+                }))
             .MatchEndForward(
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldfld),
                 new CodeMatch(OpCodes.Call))
             .RemoveInstruction()
             .InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldarg_0),
-                new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AIAct), "owner")))
+                new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder))))
             .MatchEndForward(
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldarg_0),
@@ -86,8 +90,7 @@ static class EnableBuild
                 matcher
                     .RemoveInstruction()
                     .InsertAndAdvance(
-                        new CodeInstruction(OpCodes.Ldarg_0),
-                        new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(AIAct), "owner"))
+                        new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder)))
                     );
             })
             .InstructionEnumeration();
