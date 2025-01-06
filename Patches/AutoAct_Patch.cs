@@ -90,6 +90,10 @@ static class AutoAct_Patch
             {
                 TrySetAutoActShear(chara);
             }
+            else if (ai is AutoActWater)
+            {
+                TrySetAutoActWater(chara);
+            }
         });
 
         if (Settings.PCWait && CanWait())
@@ -304,5 +308,24 @@ static class AutoAct_Patch
 
         var refTask = EClass.pc.ai.child as AI_Shear;
         AutoAct.TrySetAutoAct(chara, new AI_Shear { target = refTask.target });
+    }
+
+    internal static void TrySetAutoActWater(Chara chara)
+    {
+        var tool = chara.things.Find<TraitToolWaterCan>();
+        if (tool.IsNull())
+        {
+            return;
+        }
+
+        chara.HoldCard(tool);
+
+        var refTask = EClass.pc.ai as AutoActWater;
+        AutoAct.IsSetting = true;
+        chara.SetAI(new AutoActWater
+        {
+            waterFirst = refTask.waterFirst
+        });
+        AutoAct.IsSetting = false;
     }
 }
