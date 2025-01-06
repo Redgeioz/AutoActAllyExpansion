@@ -13,7 +13,7 @@ public class AutoActAllyExpansion : BaseUnityPlugin
     void Awake()
     {
         Instance = this;
-        Settings.keyCode = Config.Bind("Settings", "KeyCode", KeyCode.LeftAlt);
+        Settings.keyCode = Config.Bind("Settings", "KeyCode", KeyCode.BackQuote);
         Settings.enable = Config.Bind("Settings", "Enable", true);
         Settings.pickForPC = Config.Bind("Settings", "PickToPc", true);
         Settings._PCWait = Config.Bind("Settings", "PCWait", false);
