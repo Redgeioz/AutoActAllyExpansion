@@ -60,36 +60,36 @@ static class EnableBuild
     static IEnumerable<CodeInstruction> OnProgressComplete_Patch(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
-            .MatchStartForward(
-                new CodeMatch(OpCodes.Call),
-                new CodeMatch(OpCodes.Ldfld))
-            .RemoveInstructions(2)
+            .Start()
             .InsertAndAdvance(
                 new CodeInstruction(OpCodes.Ldarg_0),
-                Transpilers.EmitDelegate((TaskBuild thiz) =>
-                {
-                    Builder = thiz.owner;
-                    return thiz.held == EClass.pc.held && EClass.pc.held.HasValue();
-                }))
+                Transpilers.EmitDelegate((TaskBuild thiz) => { Builder = thiz.owner; }))
+            // EClass.pc.held.GetRootCard() != EClass.pc
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Call),
+                new CodeMatch(OpCodes.Ldfld),
+                new CodeMatch(OpCodes.Callvirt))
+            .SetInstruction(
+                new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder))))
+            // this.pos.Distance(EClass.pc.pos) > 1
             .MatchEndForward(
                 new CodeMatch(OpCodes.Ldarg_0),
                 new CodeMatch(OpCodes.Ldfld),
                 new CodeMatch(OpCodes.Call))
-            .RemoveInstruction()
-            .InsertAndAdvance(
+            .SetInstruction(
                 new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder))))
-            .MatchEndForward(
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldarg_0),
-                new CodeMatch(OpCodes.Ldfld),
-                new CodeMatch(OpCodes.Ldfld))
+            // this.target = (EClass.pc.held.category.installOne ? EClass.pc.held.Split(1) : EClass.pc.held);
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(EClass), "get_pc")))
+            .RemoveInstructions(12)
+            .InsertAndAdvance(Transpilers.EmitDelegate(
+                () => Builder.held.category.installOne ? Builder.held.Split(1) : Builder.held))
             .MatchStartForward(
                 new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(EClass), "get_pc")))
             .Repeat(matcher =>
             {
                 matcher
-                    .RemoveInstruction()
-                    .InsertAndAdvance(
+                    .SetInstruction(
                         new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder)))
                     );
             })

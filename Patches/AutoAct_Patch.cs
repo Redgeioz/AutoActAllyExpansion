@@ -287,13 +287,14 @@ static class AutoAct_Patch
     {
         var ai = EClass.pc.ai as AutoAct;
         var held = EClass.pc.held as Thing;
+
+        chara.held = held;
         AutoAct.TrySetAutoAct(chara, new TaskBuild
         {
             recipe = held.trait.GetRecipe(),
             held = held,
             pos = ai.Pos.Copy()
         });
-        chara.held = held;
     }
 
     internal static void TrySetAutoActShear(Chara chara)
