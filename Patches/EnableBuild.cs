@@ -86,13 +86,11 @@ static class EnableBuild
                 () => Builder.held.category.installOne ? Builder.held.Split(1) : Builder.held))
             .MatchStartForward(
                 new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(EClass), "get_pc")))
-            .Repeat(matcher =>
-            {
-                matcher
-                    .SetInstruction(
-                        new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder)))
-                    );
-            })
+            .Repeat(matcher => matcher
+                .SetInstruction(
+                    new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder)))
+                )
+            )
             .InstructionEnumeration();
     }
 }

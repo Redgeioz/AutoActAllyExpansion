@@ -70,29 +70,29 @@ static class AutoAct_Patch
                 return;
             }
 
-            if (ai is AutoActHarvestMine)
+            switch (ai)
             {
-                TrySetAutoActHarvestMine(chara);
-            }
-            else if (ai is AutoActDig)
-            {
-                TrySetAutoActDig(chara);
-            }
-            else if (ai is AutoActPlow)
-            {
-                TrySetAutoActPlow(chara);
-            }
-            else if (ai is AutoActBuild)
-            {
-                TrySetAutoActBuild(chara);
-            }
-            else if (ai is AutoActShear)
-            {
-                TrySetAutoActShear(chara);
-            }
-            else if (ai is AutoActWater)
-            {
-                TrySetAutoActWater(chara);
+                case AutoActHarvestMine _:
+                    TrySetAutoActHarvestMine(chara);
+                    break;
+                case AutoActDig _:
+                    TrySetAutoActDig(chara);
+                    break;
+                case AutoActPlow _:
+                    TrySetAutoActPlow(chara);
+                    break;
+                case AutoActBuild _:
+                    TrySetAutoActBuild(chara);
+                    break;
+                case AutoActShear _:
+                    TrySetAutoActShear(chara);
+                    break;
+                case AutoActWater _:
+                    TrySetAutoActWater(chara);
+                    break;
+                case AutoActSteal _:
+                    TrySetAutoActSteal(chara);
+                    break;
             }
         });
 
@@ -328,5 +328,14 @@ static class AutoAct_Patch
             waterFirst = refTask.waterFirst
         });
         AutoAct.IsSetting = false;
+    }
+
+    internal static void TrySetAutoActSteal(Chara chara)
+    {
+        var refTask = EClass.pc.ai.child as AI_Steal;
+        AutoAct.TrySetAutoAct(chara, new AI_Steal
+        {
+            target = refTask.target
+        });
     }
 }

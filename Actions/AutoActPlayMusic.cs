@@ -5,14 +5,12 @@ using AutoActMod.Actions;
 
 namespace AutoActAllyExpansion.Actions;
 
-public class AutoActPlayMusic : AutoAct
+public class AutoActPlayMusic(AI_PlayMusic source) : AutoAct(source)
 {
     public AI_PlayMusic Child => child as AI_PlayMusic;
     public override Point Pos => owner.pos;
     public override int MaxRestart => 32;
     public static bool isPCPlaying = false;
-
-    public AutoActPlayMusic(AI_PlayMusic source) : base(source) { }
 
     public static AutoActPlayMusic TryCreate(AIAct source)
     {
