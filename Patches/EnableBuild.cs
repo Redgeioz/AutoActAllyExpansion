@@ -80,12 +80,12 @@ static class EnableBuild
                 new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder))))
             // this.target = (EClass.pc.held.category.installOne ? EClass.pc.held.Split(1) : EClass.pc.held);
             .MatchStartForward(
-                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(EClass), "get_pc")))
+                new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(EClass), nameof(EClass.pc))))
             .RemoveInstructions(12)
             .InsertAndAdvance(Transpilers.EmitDelegate(
                 () => Builder.held.category.installOne ? Builder.held.Split(1) : Builder.held))
             .MatchStartForward(
-                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(EClass), "get_pc")))
+                new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(EClass), nameof(EClass.pc))))
             .Repeat(matcher => matcher
                 .SetInstruction(
                     new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder)))

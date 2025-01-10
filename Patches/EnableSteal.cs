@@ -22,7 +22,7 @@ static class EnableSteal
     {
         return new CodeMatcher(instructions)
             .MatchStartForward(
-                new CodeMatch(OpCodes.Call, AccessTools.Method(typeof(EClass), "get_pc")))
+                new CodeMatch(OpCodes.Call, AccessTools.PropertyGetter(typeof(EClass), nameof(EClass.pc))))
             .Repeat(matcher => matcher
                 .RemoveInstruction()
                 .InsertAndAdvance(

@@ -15,7 +15,7 @@ static class Move
     {
         return new CodeMatcher(instructions)
             .MatchStartForward(
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Card), "get_IsPC")))
+                new CodeMatch(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Card), nameof(Card.IsPC))))
             .SetInstruction(
                 new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Misc), nameof(Misc.IsPCOrAutoActChara))))
             .InstructionEnumeration();

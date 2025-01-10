@@ -42,15 +42,7 @@ static class Misc
             .InstructionEnumeration();
     }
 
-    static bool CanPickHeld(AIAct a)
-    {
-        if (a.owner.IsPCParty && (AutoAct.IsSetting || a.owner.ai is AutoAct))
-        {
-            return false;
-        }
-
-        return true;
-    }
+    static bool CanPickHeld(AIAct a) => !(a.owner.IsPCParty && (AutoAct.IsSetting || a.owner.ai is AutoAct));
 
     [HarmonyTranspiler]
     [HarmonyPatch(typeof(Zone), nameof(Zone.IsCrime))]
@@ -58,7 +50,7 @@ static class Misc
     {
         return new CodeMatcher(instructions)
             .MatchStartForward(
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(Card), "get_IsPC")))
+                new CodeMatch(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Card), nameof(Card.IsPC))))
             .SetInstruction(
                 new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Misc), nameof(IsPCOrAutoActChara))))
             .InstructionEnumeration();
@@ -67,5 +59,26 @@ static class Misc
     public static bool IsPCOrAutoActChara(Chara chara)
     {
         return chara.IsPC || chara.ai is AutoAct;
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(Chara), nameof(Chara.ShouldThrowAway))]
+    static IEnumerable<CodeInstruction> ShouldThrowAway_Patch(IEnumerable<CodeInstruction> instructions)
+    {
+        var matcher = new CodeMatcher(instructions)
+            .MatchEndForward(
+                new CodeMatch(OpCodes.Ldarg_1),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Card), nameof(Card.IsThrownWeapon))),
+                new CodeMatch(OpCodes.Brtrue));
+
+        var instruction = matcher.Instruction.Clone();
+
+        return matcher
+            .Advance(1)
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_1),
+                Transpilers.EmitDelegate((Thing t) => t.trait is TraitTool),
+                new CodeInstruction(instruction))
+            .InstructionEnumeration();
     }
 }
