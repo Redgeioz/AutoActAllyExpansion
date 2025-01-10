@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Reflection.Emit;
 using AutoActAllyExpansion.Actions;
 using AutoActMod;
 using AutoActMod.Actions;
@@ -31,6 +33,23 @@ static class EnablePlayMusic
                 a.Fail();
             }
         });
+    }
+
+    [HarmonyTranspiler]
+    [HarmonyPatch(typeof(AI_PlayMusic), nameof(AI_PlayMusic.Run), MethodType.Enumerator)]
+    static IEnumerable<CodeInstruction> AI_PlayMusic_Run_Patch(IEnumerable<CodeInstruction> instructions)
+    {
+        var matcher = new CodeMatcher(instructions)
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Card), nameof(Card.IsPCC))));
+
+        if (matcher.IsValid)
+        {
+            matcher.SetInstruction(
+                new CodeInstruction(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(Card), nameof(Card.IsPC))));
+        }
+
+        return matcher.InstructionEnumeration();
     }
 
     [HarmonyPostfix]
