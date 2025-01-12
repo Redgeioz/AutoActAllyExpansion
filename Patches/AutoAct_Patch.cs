@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using AutoActMod;
 using System;
+using System.Reflection;
 
 namespace AutoActAllyExpansion.Patches;
 
@@ -23,22 +24,27 @@ static class AutoAct_Patch
         });
     }
 
-    [HarmonyTranspiler]
-    [HarmonyPatch(typeof(AASettings), nameof(AASettings.SetupSettingsUI))]
-    static IEnumerable<CodeInstruction> SetupSettings_Patch(IEnumerable<CodeInstruction> instructions)
+    [HarmonyPatch]
+    static class SetupSettings_Patch
     {
-        return new CodeMatcher(instructions)
-            .MatchStartForward(
-                new CodeMatch(OpCodes.Ldloc_1),
-                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(UIContextMenu), "Show", [])))
-            .InsertAndAdvance(
-                new CodeInstruction(OpCodes.Ldloc_1),
-                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Settings), nameof(Settings.SetupSettings))))
-            .InstructionEnumeration();
+        static MethodInfo TargetMethod() => AccessTools.Method(
+            AccessTools.FirstInner(typeof(AASettings), t => t.Name.Contains("<>c")),
+            "<SetupSettings>b__56_0"
+        );
+        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
+        {
+            return new CodeMatcher(instructions)
+                .MatchStartForward(
+                    new CodeMatch(OpCodes.Ldloc_1),
+                    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(UIContextMenu), nameof(UIContextMenu.Show), [])))
+                .InsertAndAdvance(
+                    new CodeInstruction(OpCodes.Ldloc_1),
+                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Settings), nameof(Settings.SetupSettings))))
+                .InstructionEnumeration();
+        }
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnStart))]
+    [HarmonyPostfix, HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnStart))]
     static void OnStart_Patch(AutoAct __instance)
     {
         if (__instance.owner.IsNull() || !__instance.owner.IsPCParty || EClass._zone.IsRegion || !Settings.Enable)
@@ -47,17 +53,7 @@ static class AutoAct_Patch
         }
 
         var ai = EClass.pc.ai as AutoAct;
-        if (!__instance.owner.IsPC)
-        {
-            if (__instance.owner.ai is AutoAct a)
-            {
-                a.startPos = LastStartPos;
-                a.startDir = LastStartDir;
-            }
-            return;
-        }
-
-        if (ai is AutoActWait)
+        if (!__instance.owner.IsPC || ai is AutoActWait)
         {
             return;
         }
@@ -103,8 +99,7 @@ static class AutoAct_Patch
         }
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnCancelOrSuccess))]
+    [HarmonyPostfix, HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnCancelOrSuccess))]
     static void OnCancelOrSuccess_Patch(AutoAct __instance)
     {
         if (__instance.owner.IsNull() || AutoAct.IsSetting)
@@ -144,6 +139,19 @@ static class AutoAct_Patch
                 owner.held = null;
             }
         }
+    }
+
+    internal static AutoAct TrySetAutoAct(Chara chara, AIAct a)
+    {
+        var autoAct = AutoAct.TrySetAutoAct(chara, a);
+
+        autoAct.onStart = a =>
+        {
+            a.startPos = LastStartPos;
+            a.startDir = LastStartDir;
+        };
+
+        return autoAct;
     }
 
     internal static void TrySetAutoActHarvestMine(Chara chara)
@@ -222,7 +230,7 @@ static class AutoAct_Patch
                 mode = th.mode,
                 target = th.target,
             };
-            AutoAct.TrySetAutoAct(chara, source);
+            TrySetAutoAct(chara, source);
         }
         else
         {
@@ -230,7 +238,7 @@ static class AutoAct_Patch
             {
                 pos = ai.Pos.Copy(),
             };
-            AutoAct.TrySetAutoAct(chara, source);
+            TrySetAutoAct(chara, source);
         }
     }
 
@@ -251,7 +259,7 @@ static class AutoAct_Patch
             mode = refTask.Child.mode,
         };
 
-        var autoAct = AutoAct.TrySetAutoAct(chara, source) as AutoActDig;
+        var autoAct = TrySetAutoAct(chara, source) as AutoActDig;
 
         autoAct.w = refTask.w;
         autoAct.h = refTask.h;
@@ -273,7 +281,7 @@ static class AutoAct_Patch
             pos = refTask.Pos.Copy(),
         };
 
-        var autoAct = AutoAct.TrySetAutoAct(chara, source) as AutoActPlow;
+        var autoAct = TrySetAutoAct(chara, source) as AutoActPlow;
 
         autoAct.w = refTask.w;
         autoAct.h = refTask.h;
@@ -287,7 +295,7 @@ static class AutoAct_Patch
             return;
         }
 
-        AutoAct.TrySetAutoAct(chara, new AI_PlayMusic { tool = tool });
+        TrySetAutoAct(chara, new AI_PlayMusic { tool = tool });
 
         chara.HoldCard(tool);
     }
@@ -299,7 +307,7 @@ static class AutoAct_Patch
         var refTask = EClass.pc.ai as AutoActBuild;
 
         chara.held = held;
-        var autoAct = AutoAct.TrySetAutoAct(chara, new TaskBuild
+        var autoAct = TrySetAutoAct(chara, new TaskBuild
         {
             recipe = held.trait.GetRecipe(),
             held = held,
@@ -321,7 +329,7 @@ static class AutoAct_Patch
         chara.HoldCard(tool);
 
         var refTask = EClass.pc.ai.child as AI_Shear;
-        AutoAct.TrySetAutoAct(chara, new AI_Shear { target = refTask.target });
+        TrySetAutoAct(chara, new AI_Shear { target = refTask.target });
     }
 
     internal static void TrySetAutoActWater(Chara chara)
@@ -344,7 +352,7 @@ static class AutoAct_Patch
     internal static void TrySetAutoActSteal(Chara chara)
     {
         var refTask = EClass.pc.ai.child as AI_Steal;
-        AutoAct.TrySetAutoAct(chara, new AI_Steal
+        TrySetAutoAct(chara, new AI_Steal
         {
             target = refTask.target
         });

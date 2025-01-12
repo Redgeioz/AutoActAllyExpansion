@@ -8,8 +8,7 @@ namespace AutoActAllyExpansion.Patches;
 static class EnableTool
 {
     // To make allies' tool available
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(Card), nameof(Card.Tool), MethodType.Getter)]
+    [HarmonyPrefix, HarmonyPatch(typeof(Card), nameof(Card.Tool), MethodType.Getter)]
     static bool Tool_Patch(Card __instance, ref Thing __result)
     {
         if (__instance is not Chara chara)
@@ -27,8 +26,7 @@ static class EnableTool
     }
 
     // To show allies' tool
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(TraitTool), nameof(TraitTool.ShowAsTool), MethodType.Getter)]
+    [HarmonyPrefix, HarmonyPatch(typeof(TraitTool), nameof(TraitTool.ShowAsTool), MethodType.Getter)]
     static bool ShowAsTool_Patch(TraitTool __instance, ref bool __result)
     {
         if (__instance.owner?.GetRootCard() is not Chara chara)

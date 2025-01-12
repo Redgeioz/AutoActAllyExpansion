@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using AutoActMod;
@@ -12,6 +13,53 @@ namespace AutoActAllyExpansion.Patches;
 static class FilterOutAllyTarget
 {
     public static List<AutoAct> AllyTasks = [];
+    static HashSet<Point> SharedField = [];
+    static bool IsSharedFieldValid = false;
+
+    [HarmonyPatch]
+    static class OnStart_Patch
+    {
+        static IEnumerable<MethodInfo> TargetMethods() => [
+            AccessTools.Method(typeof(AutoActBuild), nameof(AutoActBuild.OnStart)),
+            AccessTools.Method(typeof(AutoActHarvestMine), nameof(AutoActHarvestMine.OnStart)),
+        ];
+
+        static void Prefix(AutoAct __instance)
+        {
+            if (__instance.owner.IsPC)
+            {
+                IsSharedFieldValid = false;
+            }
+        }
+    }
+
+    [HarmonyPatch]
+    static class InitField_Patch
+    {
+        static MethodInfo TargetMethod() => AccessTools.Method(typeof(AutoAct), nameof(AutoAct.InitField));
+
+        static bool Prefix(AutoAct __instance, ref HashSet<Point> field)
+        {
+            if (__instance.owner.IsNull() || !__instance.owner.IsPCParty || !IsSharedFieldValid)
+            {
+                return true;
+            }
+
+            field = SharedField;
+            return false;
+        }
+
+        static void Postfix(AutoAct __instance, HashSet<Point> field)
+        {
+            if (__instance.owner.IsNull() || !__instance.owner.IsPCParty || IsSharedFieldValid)
+            {
+                return;
+            }
+
+            IsSharedFieldValid = true;
+            SharedField = field;
+        }
+    }
 
     public static void UpdateAllyTasks(AutoAct current)
     {

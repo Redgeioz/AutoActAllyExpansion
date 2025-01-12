@@ -11,8 +11,7 @@ namespace AutoActAllyExpansion.Patches;
 [HarmonyPatch]
 static class EnablePlayMusic
 {
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(AI_PlayMusic), nameof(AI_PlayMusic.CancelKeepPlaying))]
+    [HarmonyPostfix, HarmonyPatch(typeof(AI_PlayMusic), nameof(AI_PlayMusic.CancelKeepPlaying))]
     static void CancelKeepPlaying_Patch()
     {
         if (!AutoActPlayMusic.isPCPlaying)
@@ -35,8 +34,7 @@ static class EnablePlayMusic
         });
     }
 
-    [HarmonyTranspiler]
-    [HarmonyPatch(typeof(AI_PlayMusic), nameof(AI_PlayMusic.Run), MethodType.Enumerator)]
+    [HarmonyTranspiler, HarmonyPatch(typeof(AI_PlayMusic), nameof(AI_PlayMusic.Run), MethodType.Enumerator)]
     static IEnumerable<CodeInstruction> AI_PlayMusic_Run_Patch(IEnumerable<CodeInstruction> instructions)
     {
         var matcher = new CodeMatcher(instructions)
@@ -52,8 +50,7 @@ static class EnablePlayMusic
         return matcher.InstructionEnumeration();
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(AI_PlayMusic), nameof(AI_PlayMusic.Evaluate))]
+    [HarmonyPostfix, HarmonyPatch(typeof(AI_PlayMusic), nameof(AI_PlayMusic.Evaluate))]
     static void Evaluate_Patch(AI_PlayMusic __instance, bool success)
     {
         if (__instance.parent is not AutoAct || __instance.owner.IsPC)

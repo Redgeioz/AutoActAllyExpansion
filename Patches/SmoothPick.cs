@@ -9,8 +9,7 @@ static class SmoothPick
 {
     static Chara SmoothPickChara = null;
 
-    [HarmonyPatch]
-    [HarmonyPatch(typeof(Progress_Custom), nameof(Progress_Custom.OnProgressComplete))]
+    [HarmonyPatch, HarmonyPatch(typeof(Progress_Custom), nameof(Progress_Custom.OnProgressComplete))]
     static class Progress_Custom_Patch
     {
         static void Prefix(Progress_Custom __instance)
@@ -30,8 +29,7 @@ static class SmoothPick
         }
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(Map), nameof(Map.TrySmoothPick), [typeof(Point), typeof(Thing), typeof(Chara)])]
+    [HarmonyPrefix, HarmonyPatch(typeof(Map), nameof(Map.TrySmoothPick), [typeof(Point), typeof(Thing), typeof(Chara)])]
     static bool TrySmoothPick_Patch(Map __instance, Point p, Thing t, Chara c)
     {
         if (c != SmoothPickChara)
@@ -50,8 +48,7 @@ static class SmoothPick
         return false;
     }
 
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(Chara), nameof(Chara.Pick))]
+    [HarmonyPrefix, HarmonyPatch(typeof(Chara), nameof(Chara.Pick))]
     static bool Pick_Patch(Chara __instance, Thing t, bool msg, bool tryStack)
     {
         if (__instance != SmoothPickChara)

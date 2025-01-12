@@ -143,8 +143,7 @@ static class StealTask
         }
     }
 
-    [HarmonyPostfix]
-    [HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnSuccess))]
+    [HarmonyPostfix, HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnSuccess))]
     static void OnSuccess_Patch(AutoAct __instance)
     {
         if (!__instance.owner.IsPCParty || TaskPos.IsNull())

@@ -8,8 +8,7 @@ namespace AutoActAllyExpansion.Patches;
 [HarmonyPatch]
 static class Misc
 {
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(Progress_Custom), nameof(Progress_Custom.CancelWhenMoved), MethodType.Getter)]
+    [HarmonyPrefix, HarmonyPatch(typeof(Progress_Custom), nameof(Progress_Custom.CancelWhenMoved), MethodType.Getter)]
     static bool CancelWhenMoved_Patch(Progress_Custom __instance, ref bool __result)
     {
         if (__instance.parent?.parent is AutoAct)
@@ -20,8 +19,7 @@ static class Misc
         return true;
     }
 
-    [HarmonyTranspiler]
-    [HarmonyPatch(typeof(AIAct), nameof(AIAct.Cancel))]
+    [HarmonyTranspiler, HarmonyPatch(typeof(AIAct), nameof(AIAct.Cancel))]
     static IEnumerable<CodeInstruction> Cancel_Patch(IEnumerable<CodeInstruction> instructions)
     {
         var matcher = new CodeMatcher(instructions)
@@ -44,8 +42,7 @@ static class Misc
 
     static bool CanPickHeld(AIAct a) => !(a.owner.IsPCParty && (AutoAct.IsSetting || a.owner.ai is AutoAct));
 
-    [HarmonyTranspiler]
-    [HarmonyPatch(typeof(Zone), nameof(Zone.IsCrime))]
+    [HarmonyTranspiler, HarmonyPatch(typeof(Zone), nameof(Zone.IsCrime))]
     static IEnumerable<CodeInstruction> IsCrime_Patch(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
@@ -61,8 +58,7 @@ static class Misc
         return chara.IsPC || chara.ai is AutoAct;
     }
 
-    [HarmonyTranspiler]
-    [HarmonyPatch(typeof(Chara), nameof(Chara.ShouldThrowAway))]
+    [HarmonyTranspiler, HarmonyPatch(typeof(Chara), nameof(Chara.ShouldThrowAway))]
     static IEnumerable<CodeInstruction> ShouldThrowAway_Patch(IEnumerable<CodeInstruction> instructions)
     {
         var matcher = new CodeMatcher(instructions)

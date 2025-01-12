@@ -18,19 +18,7 @@ public class AutoActAllyExpansion : BaseUnityPlugin
         Settings.pickForPC = Config.Bind("Settings", "PickToPc", true);
         Settings._PCWait = Config.Bind("Settings", "PCWait", false);
 
-        AutoAct.SubClasses.AddRange(
-            Assembly.GetExecutingAssembly()
-                .GetTypes()
-                .Where(t => t.IsSubclassOf(typeof(AutoAct)))
-                .ToList()
-        );
-
-        AutoAct.SubClasses.OrderBy(t =>
-        {
-            var info = t.GetField("priority");
-            var p = info.IsNull() ? 100 : (int)info.GetValue(null);
-            return p;
-        });
+        AutoAct.Register(Assembly.GetExecutingAssembly());
 
         new Harmony("AutoActAllyExpansion").PatchAll();
     }

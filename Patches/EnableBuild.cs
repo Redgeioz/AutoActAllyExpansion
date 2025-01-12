@@ -9,54 +9,9 @@ namespace AutoActAllyExpansion.Patches;
 [HarmonyPatch]
 static class EnableBuild
 {
-    static HashSet<Point> Field = [];
-    static bool IsFieldValid = false;
     static Chara Builder;
 
-    [HarmonyPrefix]
-    [HarmonyPatch(typeof(AutoActBuild), nameof(AutoActBuild.OnStart))]
-    static void OnStart_Patch(AutoAct __instance)
-    {
-        if (__instance.owner.IsPC)
-        {
-            IsFieldValid = false;
-        }
-    }
-
-    [HarmonyPatch]
-    [HarmonyPatch(typeof(AutoActBuild), nameof(AutoActBuild.Init))]
-    static class Init_Patch
-    {
-        static bool Prefix(AutoActBuild __instance)
-        {
-            if (__instance.Child.IsNull())
-            {
-                return false;
-            }
-            return true;
-        }
-
-        static void Postfix(AutoActBuild __instance)
-        {
-            if (__instance.owner.IsNull() || !__instance.owner.IsPCParty)
-            {
-                return;
-            }
-
-            if (IsFieldValid)
-            {
-                __instance.field = Field;
-            }
-            else
-            {
-                IsFieldValid = true;
-                Field = __instance.field;
-            }
-        }
-    }
-
-    [HarmonyTranspiler]
-    [HarmonyPatch(typeof(TaskBuild), nameof(TaskBuild.OnProgressComplete))]
+    [HarmonyTranspiler, HarmonyPatch(typeof(TaskBuild), nameof(TaskBuild.OnProgressComplete))]
     static IEnumerable<CodeInstruction> OnProgressComplete_Patch(IEnumerable<CodeInstruction> instructions)
     {
         return new CodeMatcher(instructions)
