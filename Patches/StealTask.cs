@@ -106,7 +106,7 @@ static class StealTask
     {
         static Predicate<Point> Filter = null;
 
-        static MethodInfo TargetMethod() => AccessTools.Method(typeof(AutoActBuild), "FindNextBuildPosition");
+        static MethodInfo TargetMethod() => AccessTools.Method(typeof(AutoActBuild), nameof(AutoActBuild.FindNextBuildPosition));
 
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {

@@ -91,7 +91,7 @@ static class FilterOutAllyTarget
     {
         static MethodInfo TargetMethod()
         {
-            return AccessTools.Method(typeof(AutoActBuild), "FindNextBuildPosition");
+            return AccessTools.Method(typeof(AutoActBuild), nameof(AutoActBuild.FindNextBuildPosition));
         }
 
         static void Prefix(AutoAct __instance, ref Point __result)

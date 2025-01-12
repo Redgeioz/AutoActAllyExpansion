@@ -24,6 +24,7 @@ public class AutoActAllyExpansion : BaseUnityPlugin
                 .Where(t => t.IsSubclassOf(typeof(AutoAct)))
                 .ToList()
         );
+
         AutoAct.SubClasses.OrderBy(t =>
         {
             var info = t.GetField("priority");

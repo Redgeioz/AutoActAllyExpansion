@@ -11,17 +11,16 @@ namespace AutoActAllyExpansion.Patches;
 [HarmonyPatch]
 static class AutoAct_Patch
 {
+    static Point LastStartPos;
     static int LastStartDir = 0;
     static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct || !chara.ai.IsRunning);
 
     static void PCWait()
     {
-        AutoAct.IsSetting = true;
-        EClass.pc.SetAI(new AutoActWait
+        AutoAct.SetAutoAct(EClass.pc, new AutoActWait
         {
             canContinue = CanWait,
         });
-        AutoAct.IsSetting = false;
     }
 
     [HarmonyTranspiler]
@@ -52,6 +51,7 @@ static class AutoAct_Patch
         {
             if (__instance.owner.ai is AutoAct a)
             {
+                a.startPos = LastStartPos;
                 a.startDir = LastStartDir;
             }
             return;
@@ -62,6 +62,7 @@ static class AutoAct_Patch
             return;
         }
 
+        LastStartPos = ai.startPos;
         LastStartDir = ai.startDir;
         EClass.pc.party.members.ForEach(chara =>
         {
@@ -243,13 +244,17 @@ static class AutoAct_Patch
 
         chara.HoldCard(diggingTool);
 
-        var refTask = EClass.pc.ai.child as TaskDig;
+        var refTask = EClass.pc.ai as AutoActDig;
         var source = new TaskDig
         {
-            pos = refTask.pos.Copy(),
-            mode = refTask.mode,
+            pos = refTask.Pos.Copy(),
+            mode = refTask.Child.mode,
         };
-        AutoAct.TrySetAutoAct(chara, source);
+
+        var autoAct = AutoAct.TrySetAutoAct(chara, source) as AutoActDig;
+
+        autoAct.w = refTask.w;
+        autoAct.h = refTask.h;
     }
 
     internal static void TrySetAutoActPlow(Chara chara)
@@ -262,12 +267,16 @@ static class AutoAct_Patch
 
         chara.HoldCard(tool);
 
-        var refTask = EClass.pc.ai.child as TaskPlow;
+        var refTask = EClass.pc.ai as AutoActPlow;
         var source = new TaskPlow
         {
-            pos = refTask.pos.Copy(),
+            pos = refTask.Pos.Copy(),
         };
-        AutoAct.TrySetAutoAct(chara, source);
+
+        var autoAct = AutoAct.TrySetAutoAct(chara, source) as AutoActPlow;
+
+        autoAct.w = refTask.w;
+        autoAct.h = refTask.h;
     }
 
     internal static void TrySetAutoActPlayMusic(Chara chara)
@@ -287,14 +296,18 @@ static class AutoAct_Patch
     {
         var ai = EClass.pc.ai as AutoAct;
         var held = EClass.pc.held as Thing;
+        var refTask = EClass.pc.ai as AutoActBuild;
 
         chara.held = held;
-        AutoAct.TrySetAutoAct(chara, new TaskBuild
+        var autoAct = AutoAct.TrySetAutoAct(chara, new TaskBuild
         {
             recipe = held.trait.GetRecipe(),
             held = held,
             pos = ai.Pos.Copy()
-        });
+        }) as AutoActBuild;
+
+        autoAct.w = refTask.w;
+        autoAct.h = refTask.h;
     }
 
     internal static void TrySetAutoActShear(Chara chara)
@@ -322,12 +335,10 @@ static class AutoAct_Patch
         chara.HoldCard(tool);
 
         var refTask = EClass.pc.ai as AutoActWater;
-        AutoAct.IsSetting = true;
-        chara.SetAI(new AutoActWater
+        AutoAct.SetAutoAct(EClass.pc, new AutoActWater
         {
             waterFirst = refTask.waterFirst
         });
-        AutoAct.IsSetting = false;
     }
 
     internal static void TrySetAutoActSteal(Chara chara)
