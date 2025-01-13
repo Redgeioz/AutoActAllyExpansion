@@ -71,12 +71,14 @@ static class FilterOutAllyTarget
                 return;
             }
 
+            bool IsValid(AIAct a) => a.GetType() == current.GetType() && (a as AutoAct).Pos.HasValue();
+
             AutoAct ai;
-            if (chara.ai.child.HasValue() && chara.ai.child.GetType() == current.GetType())
+            if (chara.ai.child.HasValue() && IsValid(chara.ai.child))
             {
                 ai = chara.ai.child as AutoAct;
             }
-            else if (chara.ai.GetType() == current.GetType())
+            else if (IsValid(chara.ai))
             {
                 ai = chara.ai as AutoAct;
             }

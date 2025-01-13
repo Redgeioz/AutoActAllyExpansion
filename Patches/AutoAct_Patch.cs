@@ -343,7 +343,7 @@ static class AutoAct_Patch
         chara.HoldCard(tool);
 
         var refTask = EClass.pc.ai as AutoActWater;
-        AutoAct.SetAutoAct(chara, new AutoActWater
+        AutoAct.SetAutoAct(chara, new AutoActWater(refTask.Pos)
         {
             waterFirst = refTask.waterFirst
         });
