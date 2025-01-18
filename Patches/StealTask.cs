@@ -54,7 +54,7 @@ static class StealTask
     [HarmonyPatch]
     static class FindCard_Patch
     {
-        static String MethodName = null;
+        static string MethodName = null;
         static Predicate<Card> OriginalFilter = null;
 
         static IEnumerable<MethodInfo> TargetMethods() => [
@@ -104,23 +104,7 @@ static class StealTask
     [HarmonyPatch]
     static class FindNextBuildPosition_Patch
     {
-        static Predicate<Point> Filter = null;
-
         static MethodInfo TargetMethod() => AccessTools.Method(typeof(AutoActBuild), nameof(AutoActBuild.FindNextBuildPosition));
-
-        static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
-        {
-            return new CodeMatcher(instructions)
-                .MatchEndForward(
-                    new CodeMatch(OpCodes.Newobj),
-                    new CodeMatch(OpCodes.Stloc_S))
-                .Advance(1)
-                .InsertAndAdvance(
-                    new CodeInstruction(OpCodes.Ldloc_0),
-                    Transpilers.EmitDelegate((Predicate<Point> f) => Filter = f)
-                )
-                .InstructionEnumeration();
-        }
 
         static void Postfix(AutoActBuild __instance, ref Point __result)
         {
@@ -130,7 +114,7 @@ static class StealTask
             }
 
             var t = FilterOutAllyTarget.AllyTasks
-                .Where(t => Filter(t.Pos))
+                .Where(t => __instance.PointChecker(t.Pos))
                 .ToList()
                 .FindMax(t => -__instance.CalcDist2(t.Pos)) as AutoActBuild;
             if (t.HasValue())

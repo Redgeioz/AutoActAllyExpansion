@@ -4,7 +4,6 @@ using AutoActMod.Actions;
 using System.Collections.Generic;
 using System.Reflection.Emit;
 using AutoActMod;
-using System;
 using System.Reflection;
 
 namespace AutoActAllyExpansion.Patches;
@@ -69,25 +68,25 @@ static class AutoAct_Patch
 
             switch (ai)
             {
-                case AutoActHarvestMine _:
+                case AutoActHarvestMine:
                     TrySetAutoActHarvestMine(chara);
                     break;
-                case AutoActDig _:
+                case AutoActDig:
                     TrySetAutoActDig(chara);
                     break;
-                case AutoActPlow _:
+                case AutoActPlow:
                     TrySetAutoActPlow(chara);
                     break;
-                case AutoActBuild _:
+                case AutoActBuild:
                     TrySetAutoActBuild(chara);
                     break;
-                case AutoActShear _:
+                case AutoActShear:
                     TrySetAutoActShear(chara);
                     break;
-                case AutoActWater _:
+                case AutoActWater:
                     TrySetAutoActWater(chara);
                     break;
-                case AutoActSteal _:
+                case AutoActSteal:
                     TrySetAutoActSteal(chara);
                     break;
             }
@@ -157,7 +156,7 @@ static class AutoAct_Patch
     internal static void TrySetAutoActHarvestMine(Chara chara)
     {
         var pc = EClass.pc;
-        var ai = pc.ai as AutoActHarvestMine;
+        var refTask = pc.ai as AutoActHarvestMine;
 
         Thing tool = null;
         var axe = chara.things.Find(t => t.trait is TraitTool && t.HasElement(225, 1));
@@ -175,13 +174,13 @@ static class AutoAct_Patch
                 return;
             }
         }
-        else if (ai.Pos.HasObj)
+        else if (refTask.Pos.HasObj)
         {
-            var str = ai.Pos.sourceObj.reqHarvest[0];
-            if (ai.Pos.sourceObj.HasGrowth)
+            var str = refTask.Pos.sourceObj.reqHarvest[0];
+            if (refTask.Pos.sourceObj.HasGrowth)
             {
                 tool = axe ?? pickaxe;
-                if (!(ai.Pos.cell.CanHarvest() || EClass.sources.elements.alias[str].id == 250) && tool.IsNull())
+                if (!(refTask.Pos.cell.CanHarvest() || EClass.sources.elements.alias[str].id == 250) && tool.IsNull())
                 {
                     return;
                 }
@@ -208,7 +207,7 @@ static class AutoAct_Patch
             return;
         }
 
-        if (!ai.Pos.HasObj && tool == axe)
+        if (!refTask.Pos.HasObj && tool == axe)
         {
             tool = pickaxe;
             if (pickaxe.IsNull())
@@ -222,7 +221,8 @@ static class AutoAct_Patch
             chara.HoldCard(tool);
         }
 
-        if (ai.Child is TaskHarvest th)
+        AutoActHarvestMine autoAct = null;
+        if (refTask.Child is TaskHarvest th)
         {
             var source = new TaskHarvest
             {
@@ -230,15 +230,20 @@ static class AutoAct_Patch
                 mode = th.mode,
                 target = th.target,
             };
-            TrySetAutoAct(chara, source);
+            autoAct = TrySetAutoAct(chara, source) as AutoActHarvestMine;
         }
         else
         {
             var source = new TaskMine
             {
-                pos = ai.Pos.Copy(),
+                pos = refTask.Pos.Copy(),
             };
-            TrySetAutoAct(chara, source);
+            autoAct = TrySetAutoAct(chara, source) as AutoActHarvestMine;
+        }
+
+        if (refTask.hasRange)
+        {
+            autoAct.SetRange(refTask.range);
         }
     }
 
@@ -263,6 +268,7 @@ static class AutoAct_Patch
 
         autoAct.w = refTask.w;
         autoAct.h = refTask.h;
+        autoAct.range = refTask.range;
     }
 
     internal static void TrySetAutoActPlow(Chara chara)
@@ -285,6 +291,7 @@ static class AutoAct_Patch
 
         autoAct.w = refTask.w;
         autoAct.h = refTask.h;
+        autoAct.range = refTask.range;
     }
 
     internal static void TrySetAutoActPlayMusic(Chara chara)
@@ -316,6 +323,7 @@ static class AutoAct_Patch
 
         autoAct.w = refTask.w;
         autoAct.h = refTask.h;
+        autoAct.range = refTask.range;
     }
 
     internal static void TrySetAutoActShear(Chara chara)

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using AutoActMod;
@@ -13,53 +12,6 @@ namespace AutoActAllyExpansion.Patches;
 static class FilterOutAllyTarget
 {
     public static List<AutoAct> AllyTasks = [];
-    static HashSet<Point> SharedField = [];
-    static bool IsSharedFieldValid = false;
-
-    [HarmonyPatch]
-    static class OnStart_Patch
-    {
-        static IEnumerable<MethodInfo> TargetMethods() => [
-            AccessTools.Method(typeof(AutoActBuild), nameof(AutoActBuild.OnStart)),
-            AccessTools.Method(typeof(AutoActHarvestMine), nameof(AutoActHarvestMine.OnStart)),
-        ];
-
-        static void Prefix(AutoAct __instance)
-        {
-            if (__instance.owner.IsPC)
-            {
-                IsSharedFieldValid = false;
-            }
-        }
-    }
-
-    [HarmonyPatch]
-    static class InitField_Patch
-    {
-        static MethodInfo TargetMethod() => AccessTools.Method(typeof(AutoAct), nameof(AutoAct.InitField));
-
-        static bool Prefix(AutoAct __instance, ref HashSet<Point> field)
-        {
-            if (__instance.owner.IsNull() || !__instance.owner.IsPCParty || !IsSharedFieldValid)
-            {
-                return true;
-            }
-
-            field = SharedField;
-            return false;
-        }
-
-        static void Postfix(AutoAct __instance, HashSet<Point> field)
-        {
-            if (__instance.owner.IsNull() || !__instance.owner.IsPCParty || IsSharedFieldValid)
-            {
-                return;
-            }
-
-            IsSharedFieldValid = true;
-            SharedField = field;
-        }
-    }
 
     public static void UpdateAllyTasks(AutoAct current)
     {
@@ -144,7 +96,7 @@ static class FilterOutAllyTarget
             return AccessTools.Method(typeof(AutoActBuild), nameof(AutoActBuild.FindNextBuildPosition));
         }
 
-        static void Prefix(AutoAct __instance, ref Point __result)
+        static void Prefix(AutoAct __instance)
         {
             if (!__instance.owner.IsPCParty)
             {
@@ -158,11 +110,10 @@ static class FilterOutAllyTarget
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return new CodeMatcher(instructions)
-                .MatchStartForward(
-                    new CodeMatch(OpCodes.Ldloc_0),
+                .MatchEndForward(
+                    new CodeMatch(OpCodes.Call),
                     new CodeMatch(OpCodes.Ldloc_S),
                     new CodeMatch(OpCodes.Callvirt))
-                .Advance(2)
                 .SetInstruction(
                     Transpilers.EmitDelegate((Predicate<Point> filter, Point p) => filter(p) && AllyTasks.Find(t => t.Pos.Equals(p)).IsNull()))
                 .InstructionEnumeration();

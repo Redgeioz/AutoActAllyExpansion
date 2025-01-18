@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using AutoActMod;
-using AutoActMod.Actions;
 using HarmonyLib;
 
 namespace AutoActAllyExpansion.Patches;
