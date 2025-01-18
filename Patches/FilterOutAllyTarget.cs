@@ -49,7 +49,6 @@ static class FilterOutAllyTarget
         static IEnumerable<MethodInfo> TargetMethods() => [
             AccessTools.Method(typeof(AutoAct), nameof(AutoAct.FindPos)),
             AccessTools.Method(typeof(AutoAct), nameof(AutoAct.FindPosRefToStartPos)),
-            AccessTools.Method(typeof(AutoAct), nameof(AutoAct.FindPosInField)),
         ];
 
         static void Prefix(AutoAct __instance, ref Predicate<Cell> filter)
