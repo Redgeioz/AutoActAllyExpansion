@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
+using AutoActMod;
 using AutoActMod.Actions;
 using BepInEx;
 using HarmonyLib;
@@ -25,7 +25,7 @@ public class AutoActAllyExpansion : BaseUnityPlugin
 
     void Update()
     {
-        if (Input.GetKeyDown(Settings.KeyCode))
+        if (Input.GetKeyDown(Settings.KeyCode) && EClass.game.HasValue())
         {
             Settings.Enable = !Settings.Enable;
             AutoActMod.AutoActMod.Say(AAAELang.GetText(Settings.Enable ? "on" : "off"));

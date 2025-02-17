@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using AutoActMod.Actions;
 using HarmonyLib;
 
 namespace AutoActAllyExpansion.Patches;
@@ -43,6 +44,31 @@ static class EnableBuild
                 .SetInstruction(
                     new CodeInstruction(OpCodes.Ldsfld, AccessTools.Field(typeof(EnableBuild), nameof(Builder)))
                 )
+            )
+            .InstructionEnumeration();
+    }
+
+    [HarmonyTranspiler, HarmonyPatch(typeof(TaskPoint), nameof(TaskPoint.Run), MethodType.Enumerator)]
+    static IEnumerable<CodeInstruction> TaskPoint_Run_Patch(IEnumerable<CodeInstruction> instructions)
+    {
+        return new CodeMatcher(instructions)
+            .Start()
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(AIAct), nameof(AIAct.CanProgress)))
+            )
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Ldloc_1),
+                new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(AIAct), nameof(AIAct.CanProgress)))
+            )
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldloc_1),
+                Transpilers.EmitDelegate((TaskPoint thiz) =>
+                {
+                    if (thiz is TaskBuild && thiz.parent is AutoActBuild autoAct)
+                    {
+                        autoAct.CheckHeld();
+                    }
+                })
             )
             .InstructionEnumeration();
     }
