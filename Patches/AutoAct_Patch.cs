@@ -17,6 +17,7 @@ static class AutoAct_Patch
 
     static void PCWait()
     {
+        Utils.Trace();
         AutoAct.SetAutoAct(EClass.pc, new AutoActWait
         {
             canContinue = CanWait,
@@ -108,6 +109,11 @@ static class AutoAct_Patch
 
         if (__instance.owner.IsPC)
         {
+            if (__instance != EClass.pc.ai)
+            {
+                return;
+            }
+
             EClass.pc.party.members.ForEach(chara =>
             {
                 if (chara.IsPC || !chara.ai.IsRunning)

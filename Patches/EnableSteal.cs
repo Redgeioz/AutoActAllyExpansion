@@ -9,13 +9,13 @@ namespace AutoActAllyExpansion.Patches;
 static class EnableSteal
 {
     static IEnumerable<MethodInfo> TargetMethods() => [
-    AccessTools.Method(
+        AccessTools.Method(
             AccessTools.FirstInner(typeof(AI_Steal), t => t.Name.Contains("DisplayClass9_0")),
             "<Run>b__2"),
-                AccessTools.Method(
+        AccessTools.Method(
             AccessTools.FirstInner(typeof(AI_Steal), t => t.Name.Contains("DisplayClass9_0")),
             "<Run>b__3"),
-        ];
+    ];
 
     static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
