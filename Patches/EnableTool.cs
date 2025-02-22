@@ -34,7 +34,7 @@ static class EnableTool
             return true;
         }
 
-        if (!chara.IsPC && chara.ai is AutoAct)
+        if (!chara.IsPC && chara.ai is AutoAct && chara.ai.Current is not GoalCombat)
         {
             __result = false;
             return false;

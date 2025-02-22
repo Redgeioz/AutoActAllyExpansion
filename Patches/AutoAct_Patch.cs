@@ -17,7 +17,6 @@ static class AutoAct_Patch
 
     static void PCWait()
     {
-        Utils.Trace();
         AutoAct.SetAutoAct(EClass.pc, new AutoActWait
         {
             canContinue = CanWait,
