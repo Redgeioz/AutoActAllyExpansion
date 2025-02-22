@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using AutoActMod;
 using System.Reflection;
+using System;
 
 namespace AutoActAllyExpansion.Patches;
 
@@ -29,7 +30,11 @@ static class AutoAct_Patch
         static MethodInfo TargetMethod() => AccessTools.Method(
             AccessTools.FirstInner(typeof(AASettings), t => t.Name.Contains("<>c")),
             "<SetupSettings>b__56_0"
+        ) ?? AccessTools.Method(
+            AccessTools.FirstInner(typeof(AASettings), t => t.Name.Contains("<>c")),
+            "<SetupSettings>b__60_0"
         );
+
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
             return new CodeMatcher(instructions)
