@@ -5,12 +5,11 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using AutoActMod;
 using System.Reflection;
-using System;
 
 namespace AutoActAllyExpansion.Patches;
 
 [HarmonyPatch]
-static class AutoAct_Patch
+internal static class AutoAct_Patch
 {
     static Point LastStartPos;
     static int LastStartDir = 0;
@@ -67,6 +66,11 @@ static class AutoAct_Patch
         EClass.pc.party.members.ForEach(chara =>
         {
             if (chara.IsPC || chara.ride.HasValue() || chara.host.HasValue())
+            {
+                return;
+            }
+
+            if (chara.ai.IsRunning && chara.ai.GetType() == ai.GetType())
             {
                 return;
             }
@@ -350,7 +354,7 @@ static class AutoAct_Patch
         TrySetAutoAct(chara, new AI_Shear { target = refTask.target });
     }
 
-    internal static void TrySetAutoActWater(Chara chara)
+    internal static void TrySetAutoActWater(Chara chara, Point pos = null)
     {
         var tool = chara.things.Find<TraitToolWaterCan>();
         if (tool.IsNull())
@@ -361,9 +365,9 @@ static class AutoAct_Patch
         chara.HoldCard(tool);
 
         var refTask = EClass.pc.ai as AutoActWater;
-        AutoAct.SetAutoAct(chara, new AutoActWater(refTask.Pos)
+        AutoAct.SetAutoAct(chara, new AutoActWater(pos ?? refTask.Pos)
         {
-            waterFirst = refTask.waterFirst
+            waterFirst = refTask?.waterFirst is true
         });
     }
 

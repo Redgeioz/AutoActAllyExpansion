@@ -9,6 +9,7 @@ public static class Settings
     public static ConfigEntry<bool> enable;
     public static ConfigEntry<bool> pickForPC;
     public static ConfigEntry<bool> _PCWait;
+    public static ConfigEntry<bool> autoWater;
     public static ConfigEntry<KeyCode> keyCode;
 
     public static bool Enable
@@ -29,6 +30,12 @@ public static class Settings
         set { _PCWait.Value = value; }
     }
 
+    public static bool AutoWater
+    {
+        get { return autoWater.Value; }
+        set { autoWater.Value = value; }
+    }
+
     public static KeyCode KeyCode
     {
         get { return keyCode.Value; }
@@ -40,6 +47,7 @@ public static class Settings
         menu.AddToggle(AAAELang.GetText("enable"), Enable, v => Enable = v);
         menu.AddToggle(AAAELang.GetText("PCWait"), PCWait, v => PCWait = v);
         menu.AddToggle(AAAELang.GetText("pickForPC"), PickForPC, v => PickForPC = v);
+        menu.AddToggle(AAAELang.GetText("autoWater"), AutoWater, v => AutoWater = v);
     }
 }
 
@@ -64,6 +72,7 @@ public static class AAAELang
                 { "enable", "启用队友自动行动　　　　　　　" },
                 { "PCWait", "在队友工作时原地等待　　　　　"  },
                 { "pickForPC", "将队友拾取的采集物交给PC 　 　 " },
+                { "autoWater", "在领地中时队友自动灌溉农作物　" },
             }
         },
         {
@@ -73,6 +82,7 @@ public static class AAAELang
                 { "enable", "啟用隊友自動行動　　　　　　　" },
                 { "PCWait", "在隊友工作時原地等待　　　　　"  },
                 { "pickForPC", "將隊友拾取的採集物交給PC 　 　 " },
+                { "autoWater", "在領地中時隊友自動灌溉農作物　" },
             }
         },
         {
@@ -81,7 +91,8 @@ public static class AAAELang
                 { "off", "仲間の自動行動: オフ。"},
                 { "enable", "仲間の自動行動　　　　　　　　" },
                 { "PCWait", "仲間作業中はその場待機　　　　" },
-                { "pickForPC", "仲間収集物をPCに渡す　　 　 　" },
+                { "pickForPC", "仲間収集物をPCに渡す　 　 　 　" },
+                { "autoWater", "仲間が領地内の農作物を自動灌漑" },
             }
         },
         {
@@ -91,6 +102,7 @@ public static class AAAELang
                 { "enable", "Enable Auto Act For Allies　　　　　　　　　　　　　 　 　" },
                 { "PCWait", "Wait In Place When Allies Are Working　　　　　　　"  },
                 { "pickForPC", "Transfer Items Collected By Allies to PC　　　　　　" },
+                { "autoWater", "Allies Auto-water Crops In Territory　　　　　　　　　" },
             }
         }
     };

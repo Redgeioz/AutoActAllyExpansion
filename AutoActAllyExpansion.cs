@@ -17,6 +17,7 @@ public class AutoActAllyExpansion : BaseUnityPlugin
         Settings.enable = Config.Bind("Settings", "Enable", true);
         Settings.pickForPC = Config.Bind("Settings", "PickToPc", true);
         Settings._PCWait = Config.Bind("Settings", "PCWait", false);
+        Settings.autoWater = Config.Bind("Settings", "AutoWater", true);
 
         AutoAct.Register(Assembly.GetExecutingAssembly());
 
