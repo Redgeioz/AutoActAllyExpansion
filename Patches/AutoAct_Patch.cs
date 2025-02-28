@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using AutoActMod;
 using System.Reflection;
+using System;
 
 namespace AutoActAllyExpansion.Patches;
 
@@ -13,7 +14,8 @@ internal static class AutoAct_Patch
 {
     static Point LastStartPos;
     static int LastStartDir = 0;
-    static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai is not AutoAct || !chara.ai.IsRunning);
+    static Type ActiveActionType;
+    static bool CanWait() => !EClass.pc.party.members.TrueForAll(chara => chara.IsPC || chara.ai.GetType() != ActiveActionType || !chara.ai.IsRunning);
 
     static void PCWait()
     {
@@ -61,6 +63,7 @@ internal static class AutoAct_Patch
             return;
         }
 
+        ActiveActionType = ai.GetType();
         LastStartPos = ai.startPos;
         LastStartDir = ai.startDir;
         EClass.pc.party.members.ForEach(chara =>
@@ -70,7 +73,7 @@ internal static class AutoAct_Patch
                 return;
             }
 
-            if (chara.ai.IsRunning && chara.ai.GetType() == ai.GetType())
+            if (chara.ai.IsRunning && chara.ai.GetType() == ActiveActionType)
             {
                 return;
             }

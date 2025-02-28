@@ -13,7 +13,7 @@ static class SmoothPick
     {
         static void Prefix(Progress_Custom __instance)
         {
-            if (__instance.owner.HasValue() && __instance.owner.IsPCParty && !__instance.owner.IsPC)
+            if (__instance.owner?.IsPCParty is true && !__instance.owner.IsPC)
             {
                 SmoothPickChara = __instance.owner;
             }
@@ -21,7 +21,7 @@ static class SmoothPick
 
         static void Postfix(Progress_Custom __instance)
         {
-            if (__instance.owner.HasValue() && __instance.owner.IsPCParty && !__instance.owner.IsPC)
+            if (__instance.owner?.IsPCParty is true && !__instance.owner.IsPC)
             {
                 SmoothPickChara = null;
             }
