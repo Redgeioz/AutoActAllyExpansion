@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
+using AutoActAllyExpansion.Actions;
 using AutoActMod;
 using AutoActMod.Actions;
 using HarmonyLib;
@@ -16,6 +17,11 @@ static class FilterOutAllyTarget
     public static void UpdateAllyTasks(AutoAct current)
     {
         AllyTasks.Clear();
+        if (current is AutoActTrain)
+        {
+            return;
+        }
+
         EClass.pc.party.members.ForEach(chara =>
         {
             if (chara == current.owner || !chara.ai.IsRunning)

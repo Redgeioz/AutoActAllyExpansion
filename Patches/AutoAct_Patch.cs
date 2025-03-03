@@ -6,6 +6,7 @@ using System.Reflection.Emit;
 using AutoActMod;
 using System.Reflection;
 using System;
+using AutoActAllyExpansion.Actions;
 
 namespace AutoActAllyExpansion.Patches;
 
@@ -100,6 +101,9 @@ internal static class AutoAct_Patch
                     break;
                 case AutoActSteal:
                     TrySetAutoActSteal(chara);
+                    break;
+                case AutoActTrain:
+                    TrySetAutoActTrain(chara);
                     break;
             }
         });
@@ -378,6 +382,15 @@ internal static class AutoAct_Patch
     {
         var refTask = EClass.pc.ai.child as AI_Steal;
         TrySetAutoAct(chara, new AI_Steal
+        {
+            target = refTask.target
+        });
+    }
+
+    internal static void TrySetAutoActTrain(Chara chara)
+    {
+        var refTask = EClass.pc.ai.child as AI_PracticeDummy;
+        TrySetAutoAct(chara, new AI_PracticeDummy
         {
             target = refTask.target
         });
