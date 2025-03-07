@@ -187,9 +187,10 @@ internal static class AutoAct_Patch
             tool = pickaxe ?? axe;
         }
 
-        if (pc.held?.trait is TraitToolSickle)
+        var heldTrait = pc.held?.trait;
+        if (heldTrait is TraitToolHammer or TraitToolSickle)
         {
-            tool = chara.things.Find(t => t.trait is TraitToolSickle);
+            tool = chara.things.Find(t => t.trait.GetType() == heldTrait.GetType());
             if (tool.IsNull())
             {
                 return;
