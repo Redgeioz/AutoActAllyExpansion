@@ -50,16 +50,16 @@ internal static class AutoAct_Patch
         }
     }
 
-    [HarmonyPostfix, HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnStart))]
-    static void OnStart_Patch(AutoAct __instance)
+    [HarmonyPostfix, HarmonyPatch(typeof(AutoAct), nameof(AutoAct.SetAutoAct))]
+    static void SetAutoAct_Patch(AutoAct autoAct)
     {
-        if (__instance.owner.IsNull() || !__instance.owner.IsPCParty || EClass._zone.IsRegion || !Settings.Enable)
+        if (autoAct.owner.IsNull() || !autoAct.owner.IsPCParty || EClass._zone.IsRegion || !Settings.Enable)
         {
             return;
         }
 
         var ai = EClass.pc.ai as AutoAct;
-        if (!__instance.owner.IsPC || ai is AutoActWait)
+        if (!autoAct.owner.IsPC || ai is AutoActWait)
         {
             return;
         }
@@ -111,6 +111,10 @@ internal static class AutoAct_Patch
         if (Settings.PCWait && CanWait())
         {
             PCWait();
+        }
+        else if (autoAct.Pos is Point p && autoAct.CalcDist2(p) <= 2)
+        {
+            autoAct.InsertAction(new AI_Wait(), true);
         }
     }
 

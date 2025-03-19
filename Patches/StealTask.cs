@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Reflection.Emit;
 using AutoActMod;
 using AutoActMod.Actions;
 using HarmonyLib;
@@ -129,20 +128,8 @@ static class StealTask
     [HarmonyPostfix, HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnSuccess))]
     static void OnSuccess_Patch(AutoAct __instance)
     {
-        if (!__instance.owner.IsPCParty || TaskPos.IsNull())
+        if (!__instance.owner.IsPCParty || __instance.owner.IsPC || TaskPos.IsNull())
         {
-            return;
-        }
-
-        if (__instance.owner.IsPC)
-        {
-            if (!__instance.Pos.Equals(TaskPos))
-            {
-                TaskPos = null;
-                return;
-            }
-
-            SetTaskPos(null);
             return;
         }
 
@@ -150,7 +137,53 @@ static class StealTask
         if (ai.GetType() == __instance.GetType() && __instance.Pos.Equals(TaskPos) && ai.Pos.Equals(TaskPos))
         {
             TaskPos = null;
-            ai.child?.Success();
+            ai.Retry();
+        }
+    }
+
+    [HarmonyPostfix, HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnCancelOrSuccess))]
+    static void OnCancelOrSuccess_Patch(AutoAct __instance)
+    {
+        if (!__instance.owner.IsPC || TaskPos.IsNull())
+        {
+            return;
+        }
+
+        SetTaskPos(null);
+    }
+
+    [HarmonyPatch]
+    static class OnChildSuccess_Patch
+    {
+        static IEnumerable<MethodInfo> TargetMethods()
+        {
+            var methods = new List<MethodInfo>();
+            AutoAct.SubClasses.ForEach(t =>
+            {
+                if (AccessTools.Method(t, nameof(AutoAct.OnChildSuccess)) is MethodInfo method)
+                {
+                    methods.Add(method);
+                }
+            });
+            return methods;
+        }
+
+        static void Postfix(AutoAct __instance)
+        {
+            if (!__instance.owner.IsPCParty || TaskPos.IsNull())
+            {
+                return;
+            }
+
+            if (__instance.owner.IsPC)
+            {
+                SetTaskPos(null);
+            }
+            else if (__instance.Pos.Equals(TaskPos))
+            {
+                TaskPos = null;
+                (EClass.pc.ai as AutoAct).Retry();
+            }
         }
     }
 
@@ -172,7 +205,7 @@ static class StealTask
 
             if (chara.ai is AutoAct ai && ai.GetType() == current && ai.Pos.Equals(TaskPos))
             {
-                ai.child?.Success();
+                ai.Retry();
                 break;
             }
         }
