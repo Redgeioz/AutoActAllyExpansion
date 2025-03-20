@@ -144,7 +144,7 @@ static class StealTask
     [HarmonyPostfix, HarmonyPatch(typeof(AutoAct), nameof(AutoAct.OnCancelOrSuccess))]
     static void OnCancelOrSuccess_Patch(AutoAct __instance)
     {
-        if (!__instance.owner.IsPC || TaskPos.IsNull())
+        if (EClass.pc.ai != __instance || TaskPos.IsNull())
         {
             return;
         }
