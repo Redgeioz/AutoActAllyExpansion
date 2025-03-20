@@ -64,6 +64,7 @@ internal static class AutoAct_Patch
             return;
         }
 
+        ai.SetStartPos();
         ActiveActionType = ai.GetType();
         LastStartPos = ai.startPos;
         LastStartDir = ai.startDir;
