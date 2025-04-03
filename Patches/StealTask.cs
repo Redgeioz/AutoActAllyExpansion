@@ -170,7 +170,7 @@ static class StealTask
 
         static void Postfix(AutoAct __instance)
         {
-            if (!__instance.owner.IsPCParty || TaskPos.IsNull())
+            if (__instance.owner?.IsPCParty is false || TaskPos.IsNull())
             {
                 return;
             }
