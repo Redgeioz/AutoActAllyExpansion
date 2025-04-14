@@ -104,6 +104,16 @@ public static class AAAELang
                 { "pickForPC", "Transfer Items Collected By Allies to PC　　　　　　" },
                 { "autoWater", "Allies Auto-water Crops In Territory　　　　　　　　　" },
             }
+        },
+        {
+            "PT-BR", new Dictionary<string, string> {
+                { "on", "Ação Automática para Aliados: Ativada." },
+                { "off", "Ação Automática para Aliados: Desativada." },
+                { "enable", "Ativar Ação Automática para Aliados　　　　　　　　　　　　　　 " },
+                { "PCWait", "Esperar no Lugar Enquanto Aliados Trabalham　　　　　　 " },
+                { "pickForPC", "Transferir Itens Coletados pelos Aliados para o PC　　　　 " },
+                { "autoWater", "Aliados Regam as Plantações Automaticamente　　　　　　 " },
+            }
         }
     };
 }
