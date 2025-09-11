@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Reflection.Emit;
+using AutoActMod;
 using AutoActMod.Actions;
 using HarmonyLib;
 
@@ -18,6 +19,14 @@ static class EnableBuild
             .InsertAndAdvance(
                 new CodeInstruction(OpCodes.Ldarg_0),
                 Transpilers.EmitDelegate((TaskBuild thiz) => { Builder = thiz.owner; }))
+            // EClass.pc.held == null
+            .MatchStartForward(
+                new CodeMatch(OpCodes.Call),
+                new CodeMatch(OpCodes.Ldfld))
+            .RemoveInstructions(2)
+            .InsertAndAdvance(
+                new CodeInstruction(OpCodes.Ldarg_0),
+                Transpilers.EmitDelegate((TaskBuild thiz) => EClass.pc.held.HasValue() && !thiz.pos.HasBlock))
             // EClass.pc.held.GetRootCard() != EClass.pc
             .MatchStartForward(
                 new CodeMatch(OpCodes.Call),

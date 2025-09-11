@@ -31,22 +31,19 @@ internal static class AutoAct_Patch
     {
         static MethodInfo TargetMethod() => AccessTools.Method(
             AccessTools.FirstInner(typeof(AASettings), t => t.Name.Contains("<>c")),
-            "<SetupSettings>b__56_0"
-        ) ?? AccessTools.Method(
-            AccessTools.FirstInner(typeof(AASettings), t => t.Name.Contains("<>c")),
-            "<SetupSettings>b__60_0"
+            "<SetupSettings>b__44_0"
         );
 
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            return new CodeMatcher(instructions)
+            var matcher = new CodeMatcher(instructions)
                 .MatchStartForward(
-                    new CodeMatch(OpCodes.Ldloc_1),
-                    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(UIContextMenu), nameof(UIContextMenu.Show), [])))
-                .InsertAndAdvance(
-                    new CodeInstruction(OpCodes.Ldloc_1),
-                    new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Settings), nameof(Settings.SetupSettings))))
-                .InstructionEnumeration();
+                    new CodeMatch(OpCodes.Callvirt, AccessTools.Method(typeof(UIContextMenu), nameof(UIContextMenu.Show), [])));
+
+            matcher.InsertAndAdvance(
+                new CodeInstruction(OpCodes.Dup),
+                new CodeInstruction(OpCodes.Call, AccessTools.Method(typeof(Settings), nameof(Settings.SetupSettings))));
+            return matcher.InstructionEnumeration();
         }
     }
 
@@ -291,11 +288,20 @@ internal static class AutoAct_Patch
             mode = refTask.Child.mode,
         };
 
-        var autoAct = TrySetAutoAct(chara, source) as AutoActDig;
+        var autoAct = new AutoActDig(source)
+        {
+            w = refTask.w,
+            h = refTask.h,
+            range = refTask.range
+        };
 
-        autoAct.w = refTask.w;
-        autoAct.h = refTask.h;
-        autoAct.range = refTask.range;
+        AutoAct.SetAutoAct(chara, autoAct);
+
+        autoAct.onStart = a =>
+        {
+            a.startPos = LastStartPos;
+            a.startDir = LastStartDir;
+        };
     }
 
     internal static void TrySetAutoActPlow(Chara chara)
@@ -348,9 +354,8 @@ internal static class AutoAct_Patch
             pos = ai.Pos.Copy()
         }) as AutoActBuild;
 
-        autoAct.w = refTask.w;
-        autoAct.h = refTask.h;
         autoAct.range = refTask.range;
+        autoAct.directions = refTask.directions;
     }
 
     internal static void TrySetAutoActShear(Chara chara)

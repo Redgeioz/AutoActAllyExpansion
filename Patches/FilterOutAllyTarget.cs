@@ -117,7 +117,7 @@ static class FilterOutAllyTarget
             return new CodeMatcher(instructions)
                 .MatchEndForward(
                     new CodeMatch(OpCodes.Call),
-                    new CodeMatch(OpCodes.Ldloc_S),
+                    new CodeMatch(OpCodes.Ldloc_3),
                     new CodeMatch(OpCodes.Callvirt))
                 .SetInstruction(
                     Transpilers.EmitDelegate((Predicate<Point> filter, Point p) => filter(p) && AllyTasks.Find(t => t.Pos.Equals(p)).IsNull()))
