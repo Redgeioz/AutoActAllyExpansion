@@ -320,11 +320,20 @@ internal static class AutoAct_Patch
             pos = refTask.Pos.Copy(),
         };
 
-        var autoAct = TrySetAutoAct(chara, source) as AutoActPlow;
+        var autoAct = new AutoActPlow(source)
+        {
+            w = refTask.w,
+            h = refTask.h,
+            range = refTask.range
+        };
 
-        autoAct.w = refTask.w;
-        autoAct.h = refTask.h;
-        autoAct.range = refTask.range;
+        AutoAct.SetAutoAct(chara, autoAct);
+
+        autoAct.onStart = a =>
+        {
+            a.startPos = LastStartPos;
+            a.startDir = LastStartDir;
+        };
     }
 
     internal static void TrySetAutoActPlayMusic(Chara chara)
