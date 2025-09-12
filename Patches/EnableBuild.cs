@@ -26,7 +26,7 @@ static class EnableBuild
             .RemoveInstructions(2)
             .InsertAndAdvance(
                 new CodeInstruction(OpCodes.Ldarg_0),
-                Transpilers.EmitDelegate((TaskBuild thiz) => EClass.pc.held.HasValue() && !thiz.pos.HasBlock))
+                Transpilers.EmitDelegate((TaskBuild thiz) => EClass.pc.held is Thing t && (t.trait is not TraitBlock || !thiz.pos.HasBlock)))
             // EClass.pc.held.GetRootCard() != EClass.pc
             .MatchStartForward(
                 new CodeMatch(OpCodes.Call),
