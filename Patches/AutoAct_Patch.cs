@@ -176,6 +176,19 @@ internal static class AutoAct_Patch
         return autoAct;
     }
 
+    internal static AutoAct SetAutoAct(Chara chara, AutoAct a)
+    {
+        var autoAct = AutoAct.SetAutoAct(chara, a);
+
+        autoAct.onStart = a =>
+        {
+            a.startPos = LastStartPos;
+            a.startDir = LastStartDir;
+        };
+
+        return autoAct;
+    }
+
     internal static void TrySetAutoActHarvestMine(Chara chara)
     {
         var pc = EClass.pc;
@@ -295,13 +308,7 @@ internal static class AutoAct_Patch
             range = refTask.range
         };
 
-        AutoAct.SetAutoAct(chara, autoAct);
-
-        autoAct.onStart = a =>
-        {
-            a.startPos = LastStartPos;
-            a.startDir = LastStartDir;
-        };
+        SetAutoAct(chara, autoAct);
     }
 
     internal static void TrySetAutoActPlow(Chara chara)
@@ -327,13 +334,7 @@ internal static class AutoAct_Patch
             range = refTask.range
         };
 
-        AutoAct.SetAutoAct(chara, autoAct);
-
-        autoAct.onStart = a =>
-        {
-            a.startPos = LastStartPos;
-            a.startDir = LastStartDir;
-        };
+        SetAutoAct(chara, autoAct);
     }
 
     internal static void TrySetAutoActPlayMusic(Chara chara)
@@ -356,15 +357,18 @@ internal static class AutoAct_Patch
         var refTask = EClass.pc.ai as AutoActBuild;
 
         chara.held = held;
-        var autoAct = TrySetAutoAct(chara, new TaskBuild
+        var autoAct = new AutoActBuild(new TaskBuild
         {
             recipe = held.trait.GetRecipe(),
             held = held,
             pos = ai.Pos.Copy()
-        }) as AutoActBuild;
+        })
+        {
+            range = refTask.range,
+            directions = refTask.directions
+        };
 
-        autoAct.range = refTask.range;
-        autoAct.directions = refTask.directions;
+        SetAutoAct(chara, autoAct);
     }
 
     internal static void TrySetAutoActShear(Chara chara)
