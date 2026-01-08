@@ -31,7 +31,7 @@ static class SmoothPick
     [HarmonyPrefix, HarmonyPatch(typeof(Map), nameof(Map.TrySmoothPick), [typeof(Point), typeof(Thing), typeof(Chara)])]
     static bool TrySmoothPick_Patch(Map __instance, Point p, Thing t, Chara c)
     {
-        if (c?.IsPC is false || SmoothPickChara.IsNull())
+        if (SmoothPickChara.IsNull() || (c?.IsPC is false && c != SmoothPickChara))
         {
             return true;
         }
