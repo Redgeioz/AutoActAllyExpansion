@@ -44,6 +44,7 @@ public static class Settings
 
     public static void SetupSettings(UIContextMenu menu)
     {
+        menu.AddButton(AAAELang.GetText("trigger"), () => AutoActMod.Settings.InputKey(keyCode));
         menu.AddToggle(AAAELang.GetText("enable"), Enable, v => Enable = v);
         menu.AddToggle(AAAELang.GetText("PCWait"), PCWait, v => PCWait = v);
         menu.AddToggle(AAAELang.GetText("pickForPC"), PickForPC, v => PickForPC = v);
@@ -73,6 +74,7 @@ public static class AAAELang
                 { "PCWait", "在队友工作时原地等待"  },
                 { "pickForPC", "将队友拾取的采集物交给PC " },
                 { "autoWater", "在领地中时队友自动灌溉农作物" },
+                { "trigger", "设置队友自动行动开关键" },
             }
         },
         {
@@ -83,6 +85,7 @@ public static class AAAELang
                 { "PCWait", "在隊友工作時原地等待"  },
                 { "pickForPC", "將隊友拾取的採集物交給PC " },
                 { "autoWater", "在領地中時隊友自動灌溉農作物" },
+                { "trigger", "設置隊友自動行動開關鍵" },
             }
         },
         {
@@ -93,16 +96,18 @@ public static class AAAELang
                 { "PCWait", "仲間作業中はその場待機" },
                 { "pickForPC", "仲間収集物をPCに渡す" },
                 { "autoWater", "仲間が領地内の農作物を自動灌漑" },
+                { "trigger", "仲間の自動行動オンオフキーを設定" },
             }
         },
         {
             "EN", new Dictionary<string, string> {
-                { "on", "Auto Act For Allies: On."},
-                { "off", "Auto Act For Allies: Off."},
-                { "enable", "Enable Auto Act For Allies" },
+                { "on", "Ally Auto Action: On."},
+                { "off", "Ally Auto Action: Off."},
+                { "enable", "Enable Ally Auto Action" },
                 { "PCWait", "Wait In Place When Allies Are Working"  },
                 { "pickForPC", "Transfer Items Collected By Allies to PC" },
                 { "autoWater", "Allies Auto-water Crops In Territory" },
+                { "trigger", "Set Ally Auto Action Toggle Key" },
             }
         },
         {
@@ -113,6 +118,7 @@ public static class AAAELang
                 { "PCWait", "Esperar no Lugar Enquanto Aliados Trabalham" },
                 { "pickForPC", "Transferir Itens Coletados pelos Aliados para o PC" },
                 { "autoWater", "Aliados Regam as Plantações Automaticamente" },
+                { "trigger", "Definir Tecla de Alternância de Ação Automática de Aliados" },
             }
         }
     };

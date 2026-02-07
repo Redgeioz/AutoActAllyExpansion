@@ -31,7 +31,7 @@ internal static class AutoAct_Patch
     {
         static MethodInfo TargetMethod() => AccessTools.Method(
             AccessTools.FirstInner(typeof(AASettings), t => t.Name.Contains("<>c")),
-            "<SetupSettings>b__40_0"
+            "<SetupSettings>b__42_0"
         );
 
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
