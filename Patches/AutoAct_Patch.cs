@@ -112,7 +112,8 @@ internal static class AutoAct_Patch
         }
         else if (autoAct.Pos is Point p && autoAct.CalcDist2(p) <= 2)
         {
-            autoAct.InsertAction(new AI_Wait(), true);
+            // wait to allow allies to synchronize task state
+            autoAct.InsertAction(new AI_Wait());
         }
     }
 
