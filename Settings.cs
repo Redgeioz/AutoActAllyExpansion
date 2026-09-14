@@ -120,6 +120,17 @@ public static class AAAELang
                 { "autoWater", "Aliados Regam as Plantações Automaticamente" },
                 { "trigger", "Definir Tecla de Alternância de Ação Automática de Aliados" },
             }
+        },
+        {
+            "RU", new Dictionary<string, string> {
+                { "on", "Auto Act спутников: вкл." },
+                { "off", "Auto Act спутников: выкл." },
+                { "enable", "Auto Act для спутников" },
+                { "PCWait", "Ждать, пока спутники работают" },
+                { "pickForPC", "Собранное отдавать игроку" },
+                { "autoWater", "Спутники поливают грядки на базе" },
+                { "trigger", "Клавиша Auto Act спутников" },
+            }
         }
     };
 }
