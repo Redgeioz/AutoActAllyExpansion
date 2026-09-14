@@ -123,13 +123,13 @@ public static class AAAELang
         },
         {
             "RU", new Dictionary<string, string> {
-                { "on", "Auto Act спутников: вкл." },
-                { "off", "Auto Act спутников: выкл." },
-                { "enable", "Auto Act для спутников" },
+                { "on", "Ally Auto Act: вкл." },
+                { "off", "Ally Auto Act: выкл." },
+                { "enable", "Включить Ally Auto Act" },
                 { "PCWait", "Ждать, пока спутники работают" },
                 { "pickForPC", "Собранное отдавать игроку" },
                 { "autoWater", "Спутники поливают грядки на базе" },
-                { "trigger", "Клавиша Auto Act спутников" },
+                { "trigger", "Клавиша Ally Auto Act" },
             }
         }
     };
