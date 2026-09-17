@@ -133,7 +133,12 @@ static class StealTask
             return;
         }
 
-        var ai = EClass.pc.ai as AutoAct;
+        if (EClass.pc.ai is not AutoAct ai)
+        {
+            TaskPos = null;
+            return;
+        }
+
         if (ai.GetType() == __instance.GetType() && __instance.Pos.Equals(TaskPos) && ai.Pos.Equals(TaskPos))
         {
             TaskPos = null;
@@ -182,7 +187,7 @@ static class StealTask
             else if (__instance.Pos.Equals(TaskPos))
             {
                 TaskPos = null;
-                (EClass.pc.ai as AutoAct).Retry();
+                (EClass.pc.ai as AutoAct)?.Retry();
             }
         }
     }
